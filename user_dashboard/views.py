@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
+from django.http import HttpResponse
+
 def home(request):
-    context = {'title': 'User Dashboard'}
-    return render(request, 'templates/home.html', context)
+    return HttpResponse("Heroku deployment successful!")

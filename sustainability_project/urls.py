@@ -20,4 +20,5 @@ from user_dashboard import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.home, name='home'),
 ]   

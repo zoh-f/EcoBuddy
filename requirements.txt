@@ -1,0 +1,7 @@
+Django
+
+#needed for deployment on Heroku
+gunicorn
+
+#used by heroku to configure Django apps
+django-heroku

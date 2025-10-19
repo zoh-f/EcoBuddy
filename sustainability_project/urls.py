@@ -25,4 +25,6 @@ urlpatterns = [
     # for user profiles
     path("profiles/<str:username>/", public_profile, name="public-profile"),
     path("profiles/upsert/", upsert_profile, name="upsert-profile"),
+    path('accounts/', include('allauth.urls')), 
+    #path('', include('user_dashboard.urls')),   
 ]   

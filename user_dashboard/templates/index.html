@@ -9,13 +9,28 @@
     {% load socialaccount %}
     <h1 style="text-align: center">EcoBuddy</h1>
     {% if user.is_authenticated %}
-    <p>Welcome. You are logged in as {{user.username}}</p>
-    {% if user.is_superuser %}
-    <p>You have admin privileges.</p>
-    {% endif %}
-    <a href="{% url 'account_logout' %}">Logout</a>
-    {% else %}
-    <a href="{% provider_login_url 'google' %}">Login with Google</a>
-    {% endif %}
+<p>Welcome. You are logged in as {{ user.username }}</p>
+
+{% if profile %}
+<h2>Your Profile</h2>
+<ul>
+  <li>Username: {{ profile.username }}</li>
+  <li>Email: {{ profile.email }}</li>
+  <li>Pronoun: {{ profile.pronoun }}</li>
+  <li>Bio: {{ profile.bio }}</li>
+  <li>Joined: {{ profile.join_date }}</li>
+</ul>
+{% else %}
+<p>No profile info found.</p>
+{% endif %}
+
+{% if user.is_superuser %}
+<p>You have admin privileges.</p>
+{% endif %}
+<a href="{% url 'account_logout' %}">Logout</a>
+{% else %}
+<a href="{% provider_login_url 'google' %}">Login with Google</a>
+{% endif %}
+
   </body>
 </html>

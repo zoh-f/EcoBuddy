@@ -17,10 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from user_dashboard import views
+from user_info.views import public_profile, upsert_profile
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("user_dashboard.urls")),
-    path('accounts/', include("allauth.urls")),
-    
+    path('', views.home, name='home'),
+    # for user profiles
+    path("profiles/<str:username>/", public_profile, name="public-profile"),
+    path("profiles/upsert/", upsert_profile, name="upsert-profile"),
 ]   

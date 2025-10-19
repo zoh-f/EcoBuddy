@@ -17,3 +17,5 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.role})"
+
+    #TODO: Make sure all users are in admin user_dashboard profile page

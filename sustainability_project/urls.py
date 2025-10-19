@@ -20,6 +20,7 @@ from user_dashboard import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include("user_dashboard.urls")),
     path('accounts/', include("allauth.urls")),
-    path('', include("user_dashboard.urls"))
+    
 ]   

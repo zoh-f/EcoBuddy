@@ -16,6 +16,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,15 +31,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-65-h#f05mvftetg3#l9na8&wi8%=5j)7uluuggib9=$7)jzi7@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'sustainability-app-b15-88368bb3ea4a.herokuapp.com']
 
 
 # Application definition
 
-SITE_ID = 3
-
+if 'HEROKU' in os.environ:
+    SITE_ID = 5
+else:
+    SITE_ID = 4
+    
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -103,8 +110,8 @@ AUTHENTICATION_BACKENDS = (
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': os.environ.get('CLIENT_ID'),
-            'secret': os.environ.get('CLIENT_SECRET'),
+            'client_id': '1045736885087-5hfk6dkfm4i47j9mofk552laj43oiqqj.apps.googleusercontent.com',
+            'secret': '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',
             'key': ''
         },
         'SCOPE': [
@@ -117,9 +124,20 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
-ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = 'home'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # optional for dev
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_ADAPTER = 'user_dashboard.adapter.MySocialAccountAdapter'
+
+
 
 
 

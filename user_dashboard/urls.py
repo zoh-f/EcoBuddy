@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.views import LogoutView    
     
 urlpatterns = [
-    path("", views.home),
+    path("", views.home, name = 'home'),
     path("accounts/", include("allauth.urls")),
 
 ]

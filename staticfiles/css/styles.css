@@ -1,0 +1,44 @@
+body {
+    background-color: rgb(255, 243, 227);
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+h1   {color: rgb(0, 0, 0);}
+p    {color: rgb(44, 31, 21);}
+
+header, footer {
+  text-align: center;
+  background-color: #e8f5e9;
+  padding: 15px;
+}
+
+main {
+  margin: 0 auto;
+  width: 80%;
+}
+
+.profile {
+  background: #f8f8f8;
+  border-radius: 12px;              
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+  padding: 20px;
+  margin: 0 auto;
+  width: 600px;
+  border-radius: 30px;
+  display: block; 
+}
+
+.google-login-button {
+  display: inline-block;          
+  padding: 10px 20px;            
+  background-color: #4285F4;     
+  color: white;                  
+  font-weight: bold;
+  font-family: "Poppins", sans-serif;
+  text-decoration: none;         
+  border-radius: 8px;            
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: block;     
+  width: 200px;        
+  margin: 0 auto;       
+  text-align: center; 
+}

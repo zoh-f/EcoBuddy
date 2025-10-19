@@ -1,37 +1,40 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>EcoBuddy</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   </head>
   <body>
     {% load socialaccount %}
     <h1 style="text-align: center">EcoBuddy</h1>
     {% if user.is_authenticated %}
-<p>Welcome. You are logged in as {{ user.username }}</p>
+<!-- <p>Welcome. You are logged in as {{ user.username }}</p> -->
 
 {% if profile %}
-<h2>Your Profile</h2>
-<ul>
-  <li>Username: {{ profile.username }}</li>
-  <li>Email: {{ profile.email }}</li>
-  <li>Pronoun: {{ profile.pronoun }}</li>
-  <li>Bio: {{ profile.bio }}</li>
-  <li>Joined: {{ profile.join_date }}</li>
-</ul>
+<div class="profile">
+  <h2>Your Profile</h2>
+  <ul>
+    <li>Username: {{ profile.username }}</li>
+    <li>Email: {{ profile.email }}</li>
+    <li>Pronoun: {{ profile.pronoun }}</li>
+    <li>Bio: {{ profile.bio }}</li>
+    <li>Joined: {{ profile.join_date }}</li>
+  </ul>
+  <a href="{% url 'account_logout' %}">Logout</a>
+</div>
 {% else %}
-<p>No profile info found.</p>
+  <p>No profile info found.</p>
 {% endif %}
 
 {% if user.is_staff %}
-<p>You have admin privileges.</p>
-<a href="{% url 'admin_page' %}">Go to Admin Page</a>
+  <p>You have admin privileges.</p>
+  <a href="{% url 'admin_page' %}">Go to Admin Page</a>
 {% endif %}
-<a href="{% url 'account_logout' %}">Logout</a>
-{% else %}
-<a href="{% provider_login_url 'google' %}">Login with Google</a>
+  {% else %} <!-- no profile -->
+  <a class="google-login-button" href="{% provider_login_url 'google' %}">Login with Google</a>
 {% endif %}
-
   </body>
 </html>

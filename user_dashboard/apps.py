@@ -4,5 +4,5 @@ class UserDashboardConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'user_dashboard'
 
-    def ready(self):
-        import user_dashboard.signals
+def ready(self):
+    import user_dashboard.signals

@@ -21,11 +21,9 @@ from user_info.views import public_profile, upsert_profile
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
     # for user profiles
     path("profiles/<str:username>/", public_profile, name="public-profile"),
     path("profiles/upsert/", upsert_profile, name="upsert-profile"),
     path('accounts/', include('allauth.urls')), 
-    path("admin_page/", views.admin_page, name="admin_page"),
-    #path('', include('user_dashboard.urls')),   
+    path('', include('user_dashboard.urls')),   
 ]   

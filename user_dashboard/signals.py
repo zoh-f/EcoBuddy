@@ -12,8 +12,9 @@ User = get_user_model()
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
-    instance.profile.save()
+        profile, _ = Profile.objects.get_or_create(user=instance)
+
+    
 
 def make_google_admin(sender, instance, created, **kwargs):
     if instance.email == ADMIN_EMAIL:

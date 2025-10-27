@@ -43,6 +43,7 @@ else:
     
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'daphne',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'messaging'
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -99,6 +101,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'sustainability_project.wsgi.application'
+ASGI_APPLICATION = 'sustainability_project.asgi.application'
 
 #Authentication Backends
 AUTHENTICATION_BACKENDS = (

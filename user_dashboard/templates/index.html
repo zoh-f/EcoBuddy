@@ -36,5 +36,6 @@
   {% else %} <!-- no profile -->
   <a class="google-login-button" href="{% provider_login_url 'google' %}">Login with Google</a>
 {% endif %}
+<a href="{% url 'messaging:lobby' %}">Messaging</a>
   </body>
 </html>

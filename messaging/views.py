@@ -41,20 +41,22 @@ def lobby(request):
     return render(request, 'lobby.html')
 
 @login_required
+@login_required
 def chat(request, recipient_username):
     recipient_profile = get_object_or_404(Profile, user__username=recipient_username)
 
-    # fetch all messages between current user and recipient
-    messages = Message.objects.filter(
-        sender=request.user, recipient=recipient_profile.user
-    ).union(
-        Message.objects.filter(sender=recipient_profile.user, recipient=request.user)
-    ).order_by('timestamp')
+    # Fetch messages separately
+    messages_from_user = Message.objects.filter(sender=request.user, recipient=recipient_profile.user)
+    messages_to_user = Message.objects.filter(sender=recipient_profile.user, recipient=request.user)
+
+    # Merge and sort in Python
+    all_messages = list(messages_from_user) + list(messages_to_user)
+    all_messages.sort(key=lambda m: m.timestamp)  # or 'created_at' depending on your field
 
     return render(request, 'chat.html', {
         'username': request.user.username,
         'recipient': recipient_profile.user.username,
-        'messages': messages
+        'messages': all_messages
     })
  
 @login_required
@@ -102,8 +104,8 @@ async def stream_chat_messages(request: HttpRequest) -> StreamingHttpResponse:
  
         # Continuously check for new messages
         while True:
-            new_messages = models.Message.objects.filter(id__gt=last_id).order_by('created_at').values(
-                'id', 'author__name', 'content'
+            new_messages = models.Message.objects.filter(id__gt=last_id).order_by('timestamp').values(
+                'id', 'sender__username', 'content'
             )
             async for message in new_messages:
                 yield f"data: {json.dumps(message)}\n\n"
@@ -111,8 +113,8 @@ async def stream_chat_messages(request: HttpRequest) -> StreamingHttpResponse:
             await asyncio.sleep(0.1)  # Adjust sleep time as needed to reduce db queries.
  
     async def get_existing_messages() -> AsyncGenerator:
-        messages = models.Message.objects.all().order_by('created_at').values(
-            'id', 'author__name', 'content'
+        messages = models.Message.objects.all().order_by('timestamp').values(
+            'id', 'sender__username', 'content'
         )
         async for message in messages:
             yield f"data: {json.dumps(message)}\n\n"

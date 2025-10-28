@@ -15,6 +15,11 @@ class Profile(models.Model):
     bio = models.TextField(blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
 
+    profile_picture = models.ImageField(
+        upload_to = "profile_pictures/",
+        blank=True,
+        null=True
+    )
     def __str__(self):
         return f"{self.user.username} ({self.role})"
 

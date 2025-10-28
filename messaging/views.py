@@ -31,7 +31,8 @@ def lobby(request: HttpRequest) -> HttpResponse:
 def chat(request: HttpRequest) -> HttpResponse:
     if not request.session.get('username'):
         return redirect('messaging:lobby')
-    return render(request, 'chat.html')
+    return render(request, 'chat.html',
+                  {'username': request.user.username})
  
 def create_message(request: HttpRequest) -> HttpResponse:
     content = request.POST.get("content")

@@ -63,6 +63,10 @@
  
   <body>
     <div class="sign-in-container">
+        {% if user.is_authenticated %}
+            <p>You are logged in as: {{ user.get_full_name|default:user.username }}</p>
+            <p>Your profile username: {{ user.username }}</p>
+        {% endif %}
       <h2>Enter your chat name:</h2>
       <form method="post">
         {% csrf_token %}

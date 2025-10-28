@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
+from uuid import uuid4
+from pathlib import Path
 
 class Profile(models.Model):
     USER = "user"
@@ -24,3 +27,20 @@ class Profile(models.Model):
         return f"{self.user.username} ({self.role})"
 
     #TODO: Make sure all users are in admin user_dashboard profile page
+
+def post_photo_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = f"{uuid4().hex}.{ext}"
+    return Path('posts') / filename
+
+class Post(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
+    photo = models.ImageField(upload_to=post_photo_path, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"Post by {self.user.username} at {self.created_at}"

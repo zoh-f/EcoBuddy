@@ -10,43 +10,80 @@ from django.http import HttpRequest, StreamingHttpResponse, HttpResponse
 from . import models
 import json
 import random
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from user_dashboard.models import Profile
+from .models import Message
+from django.contrib import messages
  
-def lobby(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        if username:
-            request.session['username'] = username
-        else:
-            names = [
-                "Horatio", "Benvolio", "Mercutio", "Lysander", "Demetrius", "Sebastian", "Orsino",
-                "Malvolio", "Hero", "Bianca", "Gratiano", "Feste", "Antonio", "Lucius", "Puck", "Lucio",
-                "Goneril", "Edgar", "Edmund", "Oswald"
-            ]
-            request.session['username'] = f"{random.choice(names)}-{hash(datetime.now().timestamp())}"
+@login_required
+def lobby(request):
+    if request.method == "POST":
+        recipient_username = request.POST.get("recipient_username", "").strip()
+
+        if not recipient_username:
+            messages.error(request, "Please enter a username to start chat.")
+            return redirect('messaging:lobby')
+
+        # Check if recipient exists
+        try:
+            recipient_profile = Profile.objects.get(user__username=recipient_username)
+        except Profile.DoesNotExist:
+            messages.error(request, f"No user found with username '{recipient_username}'.")
+            return redirect('messaging:lobby')
+
+        # Redirect to 1-on-1 chat
+        return redirect('messaging:chat', recipient_username=recipient_profile.user.username)
+
+    # GET request: just render the form
+    return render(request, 'lobby.html')
  
-        return redirect('messaging:chat')
-    else:
-        return render(request, 'lobby.html')
+@login_required
+def chat(request, recipient_username):
+    recipient_profile = get_object_or_404(Profile, username=recipient_username)
+
+    # fetch all messages between current user and recipient
+    messages = Message.objects.filter(
+        sender=request.user, recipient=recipient_profile.user
+    ).union(
+        Message.objects.filter(sender=recipient_profile.user, recipient=request.user)
+    ).order_by('timestamp')
+
+    return render(request, 'messaging/chat.html', {
+        'username': request.user.username,
+        'recipient': recipient_profile.username,
+        'messages': messages
+    })
  
-def chat(request: HttpRequest) -> HttpResponse:
-    if not request.session.get('username'):
-        return redirect('messaging:lobby')
-    return render(request, 'chat.html',
-                  {'username': request.user.username})
- 
-def create_message(request: HttpRequest) -> HttpResponse:
-    content = request.POST.get("content")
-    username = request.session.get("username")
- 
-    if not username:
-        return HttpResponse(status=403)
-    author, _ = models.Author.objects.get_or_create(name=username)
- 
-    if content:
-        models.Message.objects.create(author=author, content=content)
-        return HttpResponse(status=201)
-    else:
-        return HttpResponse(status=200)
+@login_required
+def create_message(request):
+    if request.method == "POST":
+        recipient_username = request.POST.get("recipient_username", "").strip()
+        content = request.POST.get("content", "").strip()
+
+        if not content:
+            return JsonResponse({"success": False, "errors": {"content": "Message cannot be empty"}})
+
+        # Lookup recipient via profile
+        recipient_profile = get_object_or_404(Profile, username=recipient_username)
+
+        Message.objects.create(
+            sender=request.user,
+            recipient=recipient_profile.user,
+            content=content
+        )
+
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"success": False, "errors": {"method": "Invalid request"}})
+
+@login_required
+def start_chat(request):
+    if request.method == "GET":
+        recipient_username = request.GET.get('recipient_username', '').strip()
+        return redirect('messaging:chat', recipient_username=recipient_username)
+
  
 async def stream_chat_messages(request: HttpRequest) -> StreamingHttpResponse:
     """

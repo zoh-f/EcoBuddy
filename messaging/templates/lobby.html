@@ -63,16 +63,24 @@
  
   <body>
     <div class="sign-in-container">
-        {% if user.is_authenticated %}
+    {% if messages %}
+  <ul>
+    {% for message in messages %}
+      <li style="color: red;">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {% if user.is_authenticated %}
             <p>You are logged in as: {{ user.get_full_name|default:user.username }}</p>
             <p>Your profile username: {{ user.username }}</p>
         {% endif %}
-      <h2>Enter your chat name:</h2>
-      <form method="post">
-        {% csrf_token %}
-        <input type="text" name="username" placeholder="Username" required />
-        <button type="submit">Message user</button>
-      </form>
-    </div>
+    <input type="text" name="recipient_username" placeholder="Enter recipient's username" required>
+    <button type="submit">Start Chat</button>
+</form>
+</div>
+
   </body>
 </html>

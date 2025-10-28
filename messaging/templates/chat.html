@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat</title>
+    <h1>Chat with {{ recipient }}</h1>
+    <h2>You are {{ username }}</h2>
     <style>
       body {
         font-family: 'Arial', sans-serif;
@@ -126,16 +127,19 @@
         @submit.prevent="submit"
         x-data="{state: 'composing', errors: {}}"
       >
-        <div>
-          <textarea
-            name="content"
-            @input="state = 'composing'"
-            autofocus
-            placeholder="Your next message..."
-          ></textarea>
-          <button class="button">Send</button>
+        <form x-cloak @submit.prevent="submit" x-data="{state: 'composing', errors: {}}">
+        {% csrf_token %}
+        <input type="hidden" name="sender_username" value="{{ username }}">
+        <input type="hidden" name="recipient_username" value="{{ recipient }}">
+        <textarea name="content" placeholder="Type your message..." required></textarea>
+        <button type="submit">Send</button>
+
+        <div id="messages">
+            {% for msg in messages %}
+                <div><strong>{{ msg.sender.username }}:</strong> {{ msg.content }}</div>
+            {% endfor %}
         </div>
- 
+
         <div x-show="state === 'error'">
           <p>Error sending your message ❌</p>
         </div>

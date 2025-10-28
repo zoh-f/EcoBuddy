@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign-in Page</title>
+    <title>Start Chat</title>
     <style>
       body {
         font-family: 'Helvetica Neue', sans-serif;
@@ -15,37 +15,37 @@
         margin: 0;
         color: #333;
       }
- 
-      .sign-in-container {
+
+      .lobby-container {
         background: #ffffff;
         padding: 40px 50px;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        width: 300px;
+        width: 320px;
       }
- 
-      .sign-in-container h2 {
+
+      .lobby-container h2 {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         font-size: 24px;
         color: #0a3d62;
       }
- 
-      .sign-in-container form {
+
+      .lobby-container form {
         display: flex;
         flex-direction: column;
       }
- 
-      .sign-in-container input {
+
+      .lobby-container input {
         margin-bottom: 15px;
-        padding: 15px;
+        padding: 12px;
         border: 1px solid #ced6e0;
         border-radius: 6px;
         font-size: 16px;
       }
- 
-      .sign-in-container button {
-        padding: 15px;
+
+      .lobby-container button {
+        padding: 12px;
         background-color: #2ecc71;
         color: white;
         border: none;
@@ -54,33 +54,47 @@
         font-size: 16px;
         transition: background-color 0.3s;
       }
- 
-      .sign-in-container button:hover {
+
+      .lobby-container button:hover {
         background-color: #27ae60;
+      }
+
+      .messages {
+        list-style-type: none;
+        padding: 0;
+        margin-bottom: 15px;
+      }
+
+      .messages li {
+        color: red;
+        text-align: center;
       }
     </style>
   </head>
- 
+
   <body>
-    <div class="sign-in-container">
-    {% if messages %}
-  <ul>
-    {% for message in messages %}
-      <li style="color: red;">{{ message }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
+    <div class="lobby-container">
+      <h2>Start a New Chat</h2>
 
-<form method="post">
-    {% csrf_token %}
-    {% if user.is_authenticated %}
-            <p>You are logged in as: {{ user.get_full_name|default:user.username }}</p>
-            <p>Your profile username: {{ user.username }}</p>
-        {% endif %}
-    <input type="text" name="recipient_username" placeholder="Enter recipient's username" required>
-    <button type="submit">Start Chat</button>
-</form>
-</div>
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
 
+      {% if user.is_authenticated %}
+        <p style="text-align:center;">
+          Logged in as: <strong>{{ user.username }}</strong>
+        </p>
+      {% endif %}
+
+      <form method="post" action="{% url 'messaging:lobby' %}">
+        {% csrf_token %}
+        <input type="text" name="recipient_username" placeholder="Enter recipient's username" required>
+        <button type="submit">Start Chat</button>
+      </form>
+    </div>
   </body>
 </html>

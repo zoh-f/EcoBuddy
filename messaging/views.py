@@ -21,27 +21,28 @@ from django.contrib import messages
 def lobby(request):
     if request.method == "POST":
         recipient_username = request.POST.get("recipient_username", "").strip()
+        print(f"DEBUG recipient_username = '{recipient_username}'")
+
+        # Print all usernames in the DB
+        print("DEBUG all usernames:", list(Profile.objects.values_list("user__username", flat=True)))
 
         if not recipient_username:
             messages.error(request, "Please enter a username to start chat.")
             return redirect('messaging:lobby')
 
-        # Check if recipient exists
         try:
             recipient_profile = Profile.objects.get(user__username=recipient_username)
         except Profile.DoesNotExist:
             messages.error(request, f"No user found with username '{recipient_username}'.")
             return redirect('messaging:lobby')
 
-        # Redirect to 1-on-1 chat
         return redirect('messaging:chat', recipient_username=recipient_profile.user.username)
 
-    # GET request: just render the form
     return render(request, 'lobby.html')
- 
+
 @login_required
 def chat(request, recipient_username):
-    recipient_profile = get_object_or_404(Profile, username=recipient_username)
+    recipient_profile = get_object_or_404(Profile, user__username=recipient_username)
 
     # fetch all messages between current user and recipient
     messages = Message.objects.filter(
@@ -50,9 +51,9 @@ def chat(request, recipient_username):
         Message.objects.filter(sender=recipient_profile.user, recipient=request.user)
     ).order_by('timestamp')
 
-    return render(request, 'messaging/chat.html', {
+    return render(request, 'chat.html', {
         'username': request.user.username,
-        'recipient': recipient_profile.username,
+        'recipient': recipient_profile.user.username,
         'messages': messages
     })
  
@@ -66,7 +67,7 @@ def create_message(request):
             return JsonResponse({"success": False, "errors": {"content": "Message cannot be empty"}})
 
         # Lookup recipient via profile
-        recipient_profile = get_object_or_404(Profile, username=recipient_username)
+        recipient_profile = get_object_or_404(Profile, user__username=recipient_username)
 
         Message.objects.create(
             sender=request.user,

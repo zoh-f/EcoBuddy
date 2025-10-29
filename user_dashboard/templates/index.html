@@ -24,6 +24,8 @@
     <li>Joined: {{ profile.join_date }}</li>
   </ul>
   <a href="{% url 'account_logout' %}">Logout</a>
+  <br><br>
+  <a href="{% url 'create_post' %}">Go to My Posts</a>
 </div>
 {% else %}
   <p>No profile info found.</p>

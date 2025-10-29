@@ -80,7 +80,20 @@
         border-radius: 6px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
- 
+
+      .message-box.sent {
+        margin-bottom: 12px;
+        background: #e8f5e9;
+        border-left: 4px solid #2ecc71;
+      }
+
+
+      .message-box.received {
+        margin-bottom: 12px;
+        background: #f1f5f9;
+        border-left: 4px solid #186ce2;
+      }
+
       .message-author {
         font-weight: bold;
         margin-bottom: 5px;
@@ -119,26 +132,46 @@
  
     <div class="container">
       <div class="messages">
-        <div id="sse-data"></div>
-      </div>
- 
-      <form
-        x-cloak
-        @submit.prevent="submit"
-        x-data="{state: 'composing', errors: {}}"
-      >
+        <div id="messages">
+          {% for msg in messages %}
+                {% if msg.sender.username == username %}
+                  <div class="message-box sent">
+                {% else %}
+                    <div class="message-box received">
+                {% endif %}
+                    <div class="message-author">
+                      {% if msg.sender.username == username %}
+                        You
+                      {% else %}
+                        {{msg.sender.username}}
+                      {% endif %}
+                      <span style="font-weight:400; color: #666; margin-left:8px; font-size: 12px;">
+                        {{msg.timestamp|date:"Y-m-d H:i"}}
+                      </span>
+                    </div>
+                  <div class="message-content">{{msg.content}}</div>
+                </div>
+            {% endfor %}
+              <script>
+                let LAST_RENDERED_ID = 0;
+              </script>
+              {% if messages %}
+                {% with last_msg=messages|last %}
+                  <script>
+                    LAST_RENDERED_ID = parseInt("{{ last_msg.id|default:0 }}");
+                  </script>
+                {% endwith %}
+              {% endif %}
+          </div>
+
+          <div id="sse-data"></div>
+        </div>
         <form x-cloak @submit.prevent="submit" x-data="{state: 'composing', errors: {}}">
         {% csrf_token %}
         <input type="hidden" name="sender_username" value="{{ username }}">
         <input type="hidden" name="recipient_username" value="{{ recipient }}">
         <textarea name="content" placeholder="Type your message..." required></textarea>
         <button type="submit">Send</button>
-
-        <div id="messages">
-            {% for msg in messages %}
-                <!-- <div><strong>{{ msg.sender.username }}:</strong> {{ msg.content }}</div> -->
-            {% endfor %}
-        </div>
 
         <div x-show="state === 'error'">
           <p>Error sending your message ❌</p>
@@ -151,6 +184,7 @@
     </div>
  
     <script>
+      const CURRENT_USER = "{{username|escapejs}}";
       let eventSource
       const sseData = document.getElementById('sse-data')
  
@@ -158,11 +192,18 @@
         eventSource = new EventSource("{% url 'messaging:stream-chat-messages' %}")
         eventSource.onmessage = (event) => {
           const data = JSON.parse(event.data)
+          if (typeof LAST_RENDERED_ID !== 'undefined' && data.id <= LAST_RENDERED_ID){
+            return;
+          }
+          const isSelf = data.sender__username == CURRENT_USER;
           const messageHTML = `
-                    <div class="message-box">
-                        <div class="message-author">${data.author__name}</div>
+                    <div class="message-box ${isSelf ? 'sent' : 'received'}">
+                        <div class="message-author">
+                          ${isSelf ? 'You' : data.sender__username}
+                          <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">just now</span>
+                        </div>
                         <div class="message-content">${data.content}</div>
-                    </div>`
+                    </div>`;
           sseData.innerHTML += messageHTML
         }
       }

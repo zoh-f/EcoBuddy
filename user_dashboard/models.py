@@ -1,13 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-<<<<<<< HEAD
-from django.conf import settings
-from uuid import uuid4
-from pathlib import Path
-=======
 from django.db.models.signals import post_save
 from django.dispatch import receiver
->>>>>>> messaging
 
 class Profile(models.Model):
     USER = "user"

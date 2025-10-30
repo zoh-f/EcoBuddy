@@ -186,26 +186,37 @@
     <script>
       const CURRENT_USER = "{{username|escapejs}}";
       let eventSource
-      const sseData = document.getElementById('sse-data')
+      const sseData = document.getElementById("messages")
  
       function startSSE() {
-        eventSource = new EventSource("{% url 'messaging:stream-chat-messages' %}")
-        eventSource.onmessage = (event) => {
-          const data = JSON.parse(event.data)
-          if (typeof LAST_RENDERED_ID !== 'undefined' && data.id <= LAST_RENDERED_ID){
-            return;
-          }
-          const isSelf = data.sender__username == CURRENT_USER;
-          const messageHTML = `
-                    <div class="message-box ${isSelf ? 'sent' : 'received'}">
-                        <div class="message-author">
-                          ${isSelf ? 'You' : data.sender__username}
-                          <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">just now</span>
-                        </div>
-                        <div class="message-content">${data.content}</div>
-                    </div>`;
-          sseData.innerHTML += messageHTML
-        }
+        const recipient = "{{ recipient|escapejs }}";
+        eventSource = new EventSource(`/messaging/stream-chat-messages/${recipient}/`);
+       eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  // Skip duplicates
+  if (typeof LAST_RENDERED_ID !== "undefined" && data.id <= LAST_RENDERED_ID) {
+    return;
+  }
+
+  LAST_RENDERED_ID = data.id;
+  const box = document.getElementById("messages");
+  const isSelf = data.sender__username === CURRENT_USER;
+
+  const messageHTML = `
+    <div class="message-box ${isSelf ? "sent" : "received"}">
+      <div class="message-author">
+        ${isSelf ? "You" : data.sender__username}
+        <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">just now</span>
+      </div>
+      <div class="message-content">${data.content}</div>
+    </div>
+  `;
+
+  box.innerHTML += messageHTML;
+  box.scrollTop = box.scrollHeight; // Auto-scroll to bottom
+};
+
       }
  
       // On load, start SSE if the browser supports it.
@@ -236,9 +247,29 @@
             return response.json()
           })
           .then((data) => {
-            this.errors = data.errors || {}
-          })
+  this.errors = data.errors || {};
+        if (data.success) {
+          const content = formData.get("content");
+          //appendMessage("You", content, true);
+          form.querySelector("textarea").value = "";
+        }
+      })
       }
+
+      function appendMessage(sender, content, isSelf=false) {
+  const box = document.getElementById("messages");
+  const messageHTML = `
+    <div class="message-box ${isSelf ? 'sent' : 'received'}">
+      <div class="message-author">
+        ${sender}
+        <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">just now</span>
+      </div>
+      <div class="message-content">${content}</div>
+    </div>`;
+  box.innerHTML += messageHTML;
+  box.scrollTop = box.scrollHeight;
+}
+
     </script>
     <script
       defer=""

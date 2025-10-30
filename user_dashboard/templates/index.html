@@ -66,7 +66,6 @@
     <h1 style="text-align:center; font-size:42px; font-weight:600;">EcoBuddy</h1>
 
     {% if user.is_authenticated %}
-
       {% if profile %}
       <div class="container">
         <h2 style="font-size:28px; font-weight:600;">Your Profile</h2>
@@ -98,20 +97,20 @@
           <li><strong>Joined:</strong> {{ profile.joined_at|date:"F j, Y" }}</li>
         </ul>
 
-        <!-- Logout and admin -->
+        <!-- Links for navigation -->
         <p style="margin-top:20px;">
-          <a href="{% url 'account_logout' %}" class="link">Logout</a>
+          <a href="{% url 'account_logout' %}" class="link">Logout</a> |
+          <a href="{% url 'messaging:lobby' %}" class="link">Messaging</a>
         </p>
 
         {% if user.is_staff %}
-        <p style="font-size:18px;">You have admin privileges.</p>
-        <a href="{% url 'admin_page' %}" class="link">Go to Admin Page</a>
+          <p style="font-size:18px;">You have admin privileges.</p>
+          <a href="{% url 'admin_page' %}" class="link">Go to Admin Page</a>
         {% endif %}
       </div>
       {% else %}
         <p style="text-align:center; margin-top:40px;">No profile info found.</p>
       {% endif %}
-
     {% else %}
       <!-- Not logged in -->
       <div style="text-align:center; margin-top:60px;">

@@ -43,6 +43,7 @@ else:
     
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'daphne',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'storages',
+    'messaging',
 ]
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -112,6 +114,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'sustainability_project.wsgi.application'
+ASGI_APPLICATION = 'sustainability_project.asgi.application'
 
 #Authentication Backends
 AUTHENTICATION_BACKENDS = (

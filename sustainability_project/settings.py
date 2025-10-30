@@ -65,9 +65,10 @@ AWS_SECRET_ACCESS_KEY = 'niS/MY7oQIeMCY+/cO2Om+ow3jEjt20xaB+lsvgF'
 AWS_STORAGE_BUCKET_NAME = 'ecobuddy-files'
 AWS_S3_REGION_NAME = 'us-east-2'
 
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
 
-MEDOA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/profile-pictures/"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+AWS_DEFAULT_ACL = 'public-read'
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

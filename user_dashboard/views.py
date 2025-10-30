@@ -9,17 +9,41 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
 def home(request):
-    profile = None
-    if request.user.is_authenticated:
-        try:
-            profile, created = UserInfo.objects.get_or_create(username=request.user.username, defaults={"email": request.user.email})
-            if profile.email == "":
-                profile.email = request.user.email
-                profile.save()
-        except UserInfo.DoesNotExist:
-            profile = None
+    # If user is not logged in, just show the landing/login page
+    if not request.user.is_authenticated:
+        return render(request, "index.html", {
+            "userinfo": None,
+            "profile": None,
+            "form": None,
+        })
 
-    return render(request, "index.html", {"profile": profile})
+    # If logged in, ensure a UserInfo exists
+    userinfo, _ = UserInfo.objects.get_or_create(
+        username=request.user.username,
+        defaults={"email": request.user.email}
+    )
+
+    if userinfo.email == "":
+        userinfo.email = request.user.email
+        userinfo.save()
+
+    # Ensure a Profile exists
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+
+    # Handle image upload
+    if request.method == "POST":
+        form = ProfileImageForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()     
+    else:
+        form = ProfileImageForm(instance=profile)
+
+    # Render the logged-in dashboard
+    return render(request, "index.html", {
+        "userinfo": userinfo,
+        "profile": profile,
+        "form": form,
+    })
 
 def logout_view(request):
     logout(request)
@@ -32,39 +56,3 @@ def admin_page(request):
         "profiles": profiles
     }
     return render(request, "admin_page.html", context)
-# userinfo = None   # from UserInfo model
-#     profile = None    # from Profile model (has profile_picture, bio, etc.)
-#     form = None       # ProfileImageForm for upload
-
-#     if request.user.is_authenticated:
-#         # Make sure there's a UserInfo row for this user
-#         userinfo, _ = UserInfo.objects.get_or_create(
-#             username=request.user.username,
-#             defaults={"email": request.user.email}
-#         )
-#         if userinfo.email == "":
-#             userinfo.email = request.user.email
-#             userinfo.save()
-
-#         # Get or create Profile row
-#         # (Signals should have created it already, but this is safe for older users too.)
-#         profile, _ = Profile.objects.get_or_create(user=request.user)
-
-#         # Handle picture upload
-#         if request.method == "POST":
-#             form = ProfileImageForm(request.POST, request.FILES, instance=profile)
-#             if form.is_valid():
-#                 form.save()  # uploads to S3
-#                 return redirect("home")
-#         else:
-#             form = ProfileImageForm(instance=profile)
-
-#     return render(
-#         request,
-#         "index.html",
-#         {
-#             "userinfo": userinfo,
-#             "profile": profile,
-#             "form": form,
-#         },
-#     )

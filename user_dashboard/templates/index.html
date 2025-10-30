@@ -1,45 +1,4 @@
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EcoBuddy</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-  </head>
-  <body>
-    {% load socialaccount %}
-    <h1 style="text-align: center">EcoBuddy</h1>
-    {% if user.is_authenticated %}
-<!-- <p>Welcome. You are logged in as {{ user.username }}</p> -->
-
-{% if profile %}
-<div class="profile">
-  <h2>Your Profile</h2>
-  <ul>
-    <li>Username: {{ profile.username }}</li>
-    <li>Email: {{ profile.email }}</li>
-    <li>Pronoun: {{ profile.pronoun }}</li>
-    <li>Bio: {{ profile.bio }}</li>
-    <li>Joined: {{ profile.join_date }}</li>
-  </ul>
-  <a href="{% url 'account_logout' %}">Logout</a>
-</div>
-{% else %}
-  <p>No profile info found.</p>
-{% endif %}
-
-{% if user.is_staff %}
-  <p>You have admin privileges.</p>
-  <a href="{% url 'admin_page' %}">Go to Admin Page</a>
-{% endif %}
-  {% else %} <!-- no profile -->
-  <a class="google-login-button" href="{% provider_login_url 'google' %}">Login with Google</a>
-{% endif %}
-  </body>
-</html>
-<!-- 
-{% load static %}
 {% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
@@ -48,138 +7,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EcoBuddy</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+      body {
+        background-color: #fff7e6;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: #222;
+      }
+      .container {
+        max-width: 800px;
+        margin: 40px auto;
+        background: #f9f9f9;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 20px 30px -10px rgba(0,0,0,0.15);
+        border: 1px solid rgba(0,0,0,0.05);
+      }
+      .profile-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      }
+      .placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #555;
+        font-size: 14px;
+        border: 2px solid #ccc;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+      }
+      .btn {
+        background: #000;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .btn:hover {
+        background: #222;
+      }
+      .link {
+        color: #0070f3;
+        text-decoration: underline;
+      }
+    </style>
   </head>
-  <body style="background-color:#fff7e6; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-    <h1 style="text-align:center; font-size:42px; font-weight:600; margin-top:20px; color:#000;">
-      EcoBuddy
-    </h1>
+  <body>
+    <h1 style="text-align:center; font-size:42px; font-weight:600;">EcoBuddy</h1>
 
     {% if user.is_authenticated %}
 
       {% if profile %}
-      <div style="
-        max-width:800px;
-        margin:30px auto;
-        background:#f9f9f9;
-        border-radius:20px;
-        padding:32px;
-        box-shadow:0 20px 30px -10px rgba(0,0,0,0.15);
-        border:1px solid rgba(0,0,0,0.05);
-      ">
-        <h2 style="font-size:32px; font-weight:600; margin-bottom:24px;">
-          Your Profile
-        </h2>
+      <div class="container">
+        <h2 style="font-size:28px; font-weight:600;">Your Profile</h2>
 
-        <!-- profile picture / placeholder --> 
-        <!-- <div style="margin-bottom:24px;">
+        <!-- Profile picture -->
+        <div style="margin: 20px 0;">
           {% if profile.profile_picture %}
-            <img
-              src="{{ profile.profile_picture.url }}"
-              alt="Profile picture"
-              style="
-                width:120px;
-                height:120px;
-                border-radius:50%;
-                object-fit:cover;
-                border:2px solid #ddd;
-                box-shadow:0 10px 20px rgba(0,0,0,0.1);
-                margin-bottom:12px;
-              "
-            />
+            <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-img" />
           {% else %}
-            <div style="
-              width:120px;
-              height:120px;
-              border-radius:50%;
-              background:#ddd;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              font-size:14px;
-              color:#555;
-              border:2px solid #ccc;
-              box-shadow:0 10px 20px rgba(0,0,0,0.07);
-              margin-bottom:12px;
-            ">
-              No photo
-            </div>
+            <div class="placeholder">No photo</div>
           {% endif %}
         </div>
 
-        <!-- upload form -->
-        <!-- {% if form %}
-        <div style="margin-bottom:24px;">
-          <form method="POST" enctype="multipart/form-data" style="font-size:18px;">
-            {% csrf_token %}
-            <label style="display:block; margin-bottom:8px; font-weight:500;">
-              Update Profile Picture:
-            </label>
-            {{ form.profile_picture }}
-
-            <button
-              type="submit"
-              style="
-                display:inline-block;
-                margin-top:12px;
-                background:#000;
-                color:#fff;
-                padding:8px 16px;
-                border-radius:8px;
-                border:none;
-                cursor:pointer;
-                font-size:16px;
-                font-weight:500;
-              "
-            >
-              Upload
-            </button>
-          </form>
-        </div>
+        <!-- Upload form -->
+        {% if form %}
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label style="display:block; margin-bottom:8px; font-weight:500;">Update Profile Picture:</label>
+          {{ form.profile_picture }}
+          <button type="submit" class="btn" style="margin-top:12px;">Upload</button>
+        </form>
         {% endif %}
 
-        <!-- profile info -->
-        <!-- <ul style="font-size:20px; line-height:1.5; margin-bottom:24px;">
+        <!-- Profile info -->
+        <ul style="font-size:18px; line-height:1.6; margin-top:20px;">
           <li><strong>Username:</strong> {{ user.username }}</li>
           <li><strong>Email:</strong> {{ user.email }}</li>
+          <li><strong>Bio:</strong> {{ profile.bio|default:"N/A" }}</li>
+          <li><strong>Joined:</strong> {{ profile.joined_at|date:"F j, Y" }}</li>
+        </ul>
 
-          <li><strong>Pronoun:</strong> {{ profile.pronoun }}</li>
-          <li><strong>Bio:</strong> {{ profile.bio }}</li>
-          <li><strong>Joined:</strong> {{ profile.joined_at }}</li>
-        </ul> -->
-
-        <!-- logout + admin -->
-        <!-- <p style="font-size:20px; margin-bottom:16px;">
-          <a href="{% url 'logout' %}" style="color:#0000EE; text-decoration:underline;">
-            Logout
-          </a>
+        <!-- Logout and admin -->
+        <p style="margin-top:20px;">
+          <a href="{% url 'account_logout' %}" class="link">Logout</a>
         </p>
 
         {% if user.is_staff %}
-          <p style="font-size:18px; color:#444;">You have admin privileges.</p>
-          <a
-            href="{% url 'admin_page' %}"
-            style="font-size:18px; color:#0000EE; text-decoration:underline;"
-          >
-            Go to Admin Page
-          </a>
+        <p style="font-size:18px;">You have admin privileges.</p>
+        <a href="{% url 'admin_page' %}" class="link">Go to Admin Page</a>
         {% endif %}
       </div>
-
       {% else %}
-        <p style="text-align:center; margin-top:40px; font-size:18px;">
-          No profile info found.
-        </p>
+        <p style="text-align:center; margin-top:40px;">No profile info found.</p>
       {% endif %}
 
-    {% else %} -->
-      <!-- not logged in -->
-      <!-- <div style="text-align:center; margin-top:40px;">
-        <a class="google-login-button"
-           style="display:inline-block; background:#000; color:#fff; padding:12px 20px; border-radius:8px; text-decoration:none; font-weight:500;"
-           href="{% provider_login_url 'google' %}">
+    {% else %}
+      <!-- Not logged in -->
+      <div style="text-align:center; margin-top:60px;">
+        <a class="btn" href="{% provider_login_url 'google' %}">
           Login with Google
         </a>
       </div>
     {% endif %}
   </body>
-</html>  -->
+</html>

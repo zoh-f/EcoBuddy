@@ -11,7 +11,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("admin_page/", views.admin_page, name="admin_page"),
     path("post_page/", views.posts_page, name="post_page"),
-    path("post/", views.create_post, name="create_post"),
+    path("create_post/", views.create_post, name="create_post"),
 ]
 
 if settings.DEBUG:

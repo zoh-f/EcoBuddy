@@ -220,6 +220,7 @@
     <script>
       function submit(event) {
         event.preventDefault()
+        const form = event.target;
         const formData = new FormData(event.target)
  
         const endpointUrl = "{% url 'messaging:create-message' %}"

@@ -95,6 +95,11 @@
         <input type="text" name="recipient_username" placeholder="Enter recipient's username" required>
         <button type="submit">Start Chat</button>
       </form>
+      <form action="{% url 'home' %}" method="get" style="margin-top:15px;">
+        <button type="submit" style="width:100%; background:#0a3d62; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer;">
+          Back to Home
+        </button>
+      </form>
     </div>
   </body>
 </html>

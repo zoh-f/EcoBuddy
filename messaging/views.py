@@ -16,6 +16,8 @@ from django.http import JsonResponse
 from user_dashboard.models import Profile
 from .models import Message
 from django.contrib import messages
+from django.db.models import Q
+
  
 @login_required
 def lobby(request):
@@ -88,40 +90,51 @@ def start_chat(request):
         return redirect('messaging:chat', recipient_username=recipient_username)
 
  
-async def stream_chat_messages(request: HttpRequest) -> StreamingHttpResponse:
-    """
-    Streams chat messages to the client as we create messages.
-    """
-    async def event_stream():
-        """
-        We use this function to send a continuous stream of data
-        to the connected clients.
-        """
-        async for message in get_existing_messages():
-            yield message
- 
-        last_id = await get_last_message_id()
- 
-        # Continuously check for new messages
-        while True:
-            new_messages = models.Message.objects.filter(id__gt=last_id).order_by('timestamp').values(
-                'id', 'sender__username', 'content'
+async def stream_chat_messages(request, recipient_username):
+    user = request.user
+    recipient = await asyncio.to_thread(
+        lambda: get_object_or_404(Profile, user__username=recipient_username).user
+    )
+
+    async def get_existing_messages() -> AsyncGenerator[str, None]:
+        messages = await asyncio.to_thread(
+            lambda: list(
+                models.Message.objects.filter(
+                    (models.Q(sender=user, recipient=recipient) |
+                     models.Q(sender=recipient, recipient=user))
+                ).order_by("timestamp").values("id", "sender__username", "content")
             )
-            async for message in new_messages:
-                yield f"data: {json.dumps(message)}\n\n"
-                last_id = message['id']
-            await asyncio.sleep(0.1)  # Adjust sleep time as needed to reduce db queries.
- 
-    async def get_existing_messages() -> AsyncGenerator:
-        messages = models.Message.objects.all().order_by('timestamp').values(
-            'id', 'sender__username', 'content'
         )
-        async for message in messages:
+        for message in messages:
             yield f"data: {json.dumps(message)}\n\n"
- 
+
     async def get_last_message_id() -> int:
-        last_message = await models.Message.objects.all().alast()
+        last_message = await asyncio.to_thread(
+            lambda: models.Message.objects.filter(
+                (models.Q(sender=user, recipient=recipient) |
+                 models.Q(sender=recipient, recipient=user))
+            ).order_by("-id").first()
+        )
         return last_message.id if last_message else 0
- 
-    return StreamingHttpResponse(event_stream(), content_type='text/event-stream')
- 
+
+    async def event_stream():
+        last_id = 0
+        while True:
+            # Fetch messages for this chat that are newer than last_id
+            new_messages = await asyncio.to_thread(
+                lambda: list(
+                    models.Message.objects.filter(
+                        Q(sender=user, recipient=recipient) |
+                        Q(sender=recipient, recipient=user),
+                        id__gt=last_id
+                    ).order_by("id").values("id", "sender__username", "content")
+                )
+            )
+
+            for msg in new_messages:
+                yield f"data: {json.dumps(msg)}\n\n"
+                last_id = msg["id"]
+
+            await asyncio.sleep(0.5)  # small delay to avoid DB spam
+
+    return StreamingHttpResponse(event_stream(), content_type="text/event-stream")

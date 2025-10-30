@@ -30,6 +30,7 @@ def post_photo_path(instance, filename):
 
 class Post(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200, default="Sustainability Post")
     content = models.TextField()
     photo = models.ImageField(upload_to=post_photo_path, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

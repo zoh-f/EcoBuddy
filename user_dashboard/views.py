@@ -35,6 +35,12 @@ def admin_page(request):
     return render(request, "admin_page.html", context)
 
 @login_required
+def posts_page(request):
+    # show ONLY this user's posts
+    posts = Post.objects.filter(user=request.user).order_by("-created_at")
+    return render(request, "post_page.html", {"posts": posts})
+
+@login_required
 def create_post(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)

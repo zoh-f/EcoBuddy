@@ -17,6 +17,7 @@ from user_dashboard.models import Profile
 from .models import Message
 from django.contrib import messages
 from django.db.models import Q
+import time
 
  
 @login_required
@@ -92,6 +93,9 @@ def start_chat(request):
  
 async def stream_chat_messages(request, recipient_username):
     user = request.user
+    last_id = 0
+    KEEP_ALIVE_INTERVAL = 25
+    last_keepalive = time.time()
     recipient = await asyncio.to_thread(
         lambda: get_object_or_404(Profile, user__username=recipient_username).user
     )
@@ -118,8 +122,11 @@ async def stream_chat_messages(request, recipient_username):
         return last_message.id if last_message else 0
 
     async def event_stream():
-        last_id = 0
+        nonlocal last_id, last_keepalive
         while True:
+            if time.time() - last_keepalive > KEEP_ALIVE_INTERVAL:
+                yield ": keep-alive\n\n"
+                last_keepalive = time.time()
             # Fetch messages for this chat that are newer than last_id
             new_messages = await asyncio.to_thread(
                 lambda: list(
@@ -136,5 +143,8 @@ async def stream_chat_messages(request, recipient_username):
                 last_id = msg["id"]
 
             await asyncio.sleep(0.5)  # small delay to avoid DB spam
-
-    return StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+    
+    response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+    response["Cache-Control"] = "no-cache"
+    response["X-Accel-Buffering"] = "no"  # disables buffering in proxies (Heroku)
+    return response

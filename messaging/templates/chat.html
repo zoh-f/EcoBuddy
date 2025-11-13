@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <h1>Chat with {{ recipient }}</h1>
+    <h1>Chat with
+    {% for p in participants %}
+        {{ p.username }}{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+    </h1>
     <h2>You are {{ username }}</h2>
     <style>
       body {
@@ -169,7 +173,7 @@
         <form x-cloak @submit.prevent="submit" x-data="{state: 'composing', errors: {}}">
         {% csrf_token %}
         <input type="hidden" name="sender_username" value="{{ username }}">
-        <input type="hidden" name="recipient_username" value="{{ recipient }}">
+        <input type="hidden" name="chat_room_id" value="{{ chat_room.id }}">
         <textarea name="content" placeholder="Type your message..." required></textarea>
         <button type="submit">Send</button>
 
@@ -187,34 +191,33 @@
       const CURRENT_USER = "{{username|escapejs}}";
       let eventSource
       const sseData = document.getElementById("messages")
- 
+      const chatRoomId = "{{ chat_room.id }}";
       function startSSE() {
-        const recipient = "{{ recipient|escapejs }}";
-        eventSource = new EventSource(`/messaging/stream-chat-messages/${recipient}/`);
-       eventSource.onmessage = (event) => {
-  const data = JSON.parse(event.data);
+          eventSource = new EventSource(`/messaging/stream-chat-messages/${chatRoomId}/`);
+          eventSource.onmessage = (event) => {
+      if (!event.data.startsWith("{")) return; // skip keep-alive
+      const data = JSON.parse(event.data);
 
-  // Skip duplicates
-  if (typeof LAST_RENDERED_ID !== "undefined" && data.id <= LAST_RENDERED_ID) {
-    return;
-  }
+      if (data.id <= LAST_RENDERED_ID) return;
 
-  LAST_RENDERED_ID = data.id;
-  const box = document.getElementById("messages");
-  const isSelf = data.sender__username === CURRENT_USER;
+      LAST_RENDERED_ID = data.id;
+      const box = document.getElementById("messages");
+      const isSelf = data.sender__username === CURRENT_USER;
 
-  const messageHTML = `
-    <div class="message-box ${isSelf ? "sent" : "received"}">
-      <div class="message-author">
-        ${isSelf ? "You" : data.sender__username}
-        <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">just now</span>
-      </div>
-      <div class="message-content">${data.content}</div>
-    </div>
-  `;
+      const messageHTML = `
+          <div class="message-box ${isSelf ? "sent" : "received"}">
+              <div class="message-author">
+                  ${isSelf ? "You" : data.sender__username}
+                  <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">
+                      just now
+                  </span>
+              </div>
+              <div class="message-content">${data.content}</div>
+          </div>
+      `;
 
-  box.innerHTML += messageHTML;
-  box.scrollTop = box.scrollHeight; // Auto-scroll to bottom
+      box.innerHTML += messageHTML;
+      box.scrollTop = box.scrollHeight;
 };
 
       }

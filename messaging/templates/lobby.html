@@ -21,7 +21,7 @@
         padding: 40px 50px;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        width: 320px;
+        width: 360px;
       }
 
       .lobby-container h2 {
@@ -34,9 +34,10 @@
       .lobby-container form {
         display: flex;
         flex-direction: column;
+        margin-bottom: 20px;
       }
 
-      .lobby-container input {
+      .lobby-container select {
         margin-bottom: 15px;
         padding: 12px;
         border: 1px solid #ced6e0;
@@ -59,13 +60,42 @@
         background-color: #27ae60;
       }
 
+      .current-chats {
+        margin-top: 20px;
+      }
+
+      .current-chats h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #0a3d62;
+        text-align: center;
+      }
+
+      .current-chats ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .current-chats li {
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .current-chats li:hover {
+        background: #e0f2f1;
+      }
+
       .messages {
         list-style-type: none;
         padding: 0;
         margin-bottom: 15px;
-      }
-
-      .messages li {
         color: red;
         text-align: center;
       }
@@ -90,11 +120,55 @@
         </p>
       {% endif %}
 
-      <form method="post" action="{% url 'messaging:lobby' %}">
-        {% csrf_token %}
-        <input type="text" name="recipient_username" placeholder="Enter recipient's username" required>
-        <button type="submit">Start Chat</button>
-      </form>
+
+      <!-- Start Group DM -->
+<form method="post" action="{% url 'messaging:lobby' %}">
+  {% csrf_token %}
+  <label for="participants">Select users to chat with or search users:</label>
+<input type="text" id="user-search" placeholder="Type to filter users..." style="padding:12px; margin-bottom:10px; border-radius:6px; border:1px solid #ced6e0;">
+
+  <select name="participants" id="participants" multiple required style="padding:12px; margin-bottom:15px; border-radius:6px; border:1px solid #ced6e0;">
+    {% for user in all_users %}
+      {% if user != request.user %}
+        <option value="{{ user.username }}">{{ user.username }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+  <button type="submit">Start Chat</button>
+</form>
+
+      <script>
+const userSearch = document.getElementById('user-search');
+const participantsSelect = document.getElementById('participants');
+
+userSearch.addEventListener('input', () => {
+    const filter = userSearch.value.toLowerCase();
+    for (let option of participantsSelect.options) {
+        const text = option.text.toLowerCase();
+        option.style.display = text.includes(filter) ? '' : 'none';
+    }
+});
+</script>
+
+
+      <!-- Current Chats -->
+      <div class="current-chats">
+        <h3>Your Current Chats</h3>
+        <ul>
+          {% for chat in current_chats %}
+            <li onclick="location.href='{% url 'messaging:chat' chat_room_id=chat.id %}'">
+              {% for p in chat.participants.all %}
+                {% if p != user %}
+                  {{ p.username }}{% if not forloop.last %}, {% endif %}
+                {% endif %}
+              {% endfor %}
+            </li>
+          {% empty %}
+            <li>No active chats.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
       <form action="{% url 'home' %}" method="get" style="margin-top:15px;">
         <button type="submit" style="width:100%; background:#0a3d62; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer;">
           Back to Home

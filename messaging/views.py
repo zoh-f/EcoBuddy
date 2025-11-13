@@ -24,39 +24,40 @@ import time
  
 @login_required
 def lobby(request):
-    if request.method == "POST":
-        usernames_str = request.POST.get("usernames", "")  # string
-        usernames = [u.strip() for u in usernames_str.split(",") if u.strip()]
+    all_users = User.objects.all()
 
+    if request.method == "POST":
+        usernames = request.POST.getlist("participants")
         if not usernames:
-            messages.error(request, "Please enter at least one username to start chat.")
+            messages.error(request, "Please select at least one user.")
             return redirect("messaging:lobby")
 
-        # Include self in participants
         participants = list(User.objects.filter(username__in=usernames)) + [request.user]
-        participant_ids = sorted([u.id for u in participants])
 
-        # Get rooms that have the same number of participants
-        existing_rooms = ChatRoom.objects.annotate(num_participants=Count('participants')).filter(
-            num_participants=len(participant_ids)
-        )
+        # check for existing chat with same participants
+        existing_chats = ChatRoom.objects.annotate(num_participants=Count('participants')).filter(num_participants=len(participants))
+        for chat in existing_chats:
+            chat_users = list(chat.participants.all())
+            if set(chat_users) == set(participants):
+                return redirect("messaging:chat", chat_room_id=chat.id)
 
-        # Find a room where the participant IDs match exactly
-        for room in existing_rooms:
-            room_ids = sorted(list(room.participants.values_list('id', flat=True)))
-            if room_ids == participant_ids:
-                chat_room = room
-                break
-        else:
-            # No existing room, create a new one
-            chat_room = ChatRoom.objects.create()
-            chat_room.participants.set(participants)
+        chat_room = ChatRoom.objects.create()
         chat_room.participants.set(participants)
         chat_room.save()
-
         return redirect("messaging:chat", chat_room_id=chat_room.id)
 
-    return render(request, "lobby.html")
+    # fetch chats where the current user is a participant
+    current_chats = ChatRoom.objects.filter(participants=request.user)
+
+    return render(
+        request,
+        "lobby.html",
+        {
+            "all_users": all_users,
+            "current_chats": current_chats,
+        },
+    )
+
 
 
 @login_required

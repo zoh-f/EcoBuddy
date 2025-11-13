@@ -6,6 +6,10 @@ class ChatRoom(models.Model):
     participants = models.ManyToManyField(User, related_name="chat_rooms")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def get_display_name(self):
+        return ", ".join([u.username for u in self.participants.all()])
+
     def __str__(self):
         return self.name or f"ChatRoom {self.id}"
 

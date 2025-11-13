@@ -8,80 +8,90 @@ from typing import AsyncGenerator
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, StreamingHttpResponse, HttpResponse
 from . import models
+from django.db import models
+from django.contrib.auth.models import User
 import json
 import random
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from user_dashboard.models import Profile
-from .models import Message
+from .models import Message, ChatRoom
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count
 import time
 
  
 @login_required
 def lobby(request):
     if request.method == "POST":
-        recipient_username = request.POST.get("recipient_username", "").strip()
-        print(f"DEBUG recipient_username = '{recipient_username}'")
+        usernames_str = request.POST.get("usernames", "")  # string
+        usernames = [u.strip() for u in usernames_str.split(",") if u.strip()]
 
-        # Print all usernames in the DB
-        print("DEBUG all usernames:", list(Profile.objects.values_list("user__username", flat=True)))
+        if not usernames:
+            messages.error(request, "Please enter at least one username to start chat.")
+            return redirect("messaging:lobby")
 
-        if not recipient_username:
-            messages.error(request, "Please enter a username to start chat.")
-            return redirect('messaging:lobby')
+        # Include self in participants
+        participants = list(User.objects.filter(username__in=usernames)) + [request.user]
+        participant_ids = sorted([u.id for u in participants])
 
-        try:
-            recipient_profile = Profile.objects.get(user__username=recipient_username)
-        except Profile.DoesNotExist:
-            messages.error(request, f"No user found with username '{recipient_username}'.")
-            return redirect('messaging:lobby')
+        # Get rooms that have the same number of participants
+        existing_rooms = ChatRoom.objects.annotate(num_participants=Count('participants')).filter(
+            num_participants=len(participant_ids)
+        )
 
-        return redirect('messaging:chat', recipient_username=recipient_profile.user.username)
+        # Find a room where the participant IDs match exactly
+        for room in existing_rooms:
+            room_ids = sorted(list(room.participants.values_list('id', flat=True)))
+            if room_ids == participant_ids:
+                chat_room = room
+                break
+        else:
+            # No existing room, create a new one
+            chat_room = ChatRoom.objects.create()
+            chat_room.participants.set(participants)
+        chat_room.participants.set(participants)
+        chat_room.save()
 
-    return render(request, 'lobby.html')
+        return redirect("messaging:chat", chat_room_id=chat_room.id)
+
+    return render(request, "lobby.html")
+
 
 @login_required
-@login_required
-def chat(request, recipient_username):
-    recipient_profile = get_object_or_404(Profile, user__username=recipient_username)
+def chat(request, chat_room_id):
+    chat_room = get_object_or_404(ChatRoom, id=chat_room_id)
 
-    # Fetch messages separately
-    messages_from_user = Message.objects.filter(sender=request.user, recipient=recipient_profile.user)
-    messages_to_user = Message.objects.filter(sender=recipient_profile.user, recipient=request.user)
+    if request.user not in chat_room.participants.all():
+        return HttpResponse("You are not a participant in this chat.", status=403)
 
-    # Merge and sort in Python
-    all_messages = list(messages_from_user) + list(messages_to_user)
-    all_messages.sort(key=lambda m: m.timestamp)  # or 'created_at' depending on your field
+    all_messages = list(chat_room.messages.order_by("timestamp"))
+    other_participants = chat_room.participants.exclude(id=request.user.id)
 
-    return render(request, 'chat.html', {
-        'username': request.user.username,
-        'recipient': recipient_profile.user.username,
-        'messages': all_messages
+    return render(request, "chat.html", {
+        "username": request.user.username,
+        "chat_room": chat_room,
+        "messages": all_messages,
+        "participants": other_participants,
     })
+
  
 @login_required
 def create_message(request):
     if request.method == "POST":
-        recipient_username = request.POST.get("recipient_username", "").strip()
+        chat_room_id = request.POST.get("chat_room_id")
         content = request.POST.get("content", "").strip()
-
         if not content:
             return JsonResponse({"success": False, "errors": {"content": "Message cannot be empty"}})
 
-        # Lookup recipient via profile
-        recipient_profile = get_object_or_404(Profile, user__username=recipient_username)
-
+        chat_room = get_object_or_404(ChatRoom, id=chat_room_id)
         Message.objects.create(
             sender=request.user,
-            recipient=recipient_profile.user,
+            chat_room=chat_room,
             content=content
         )
-
         return JsonResponse({"success": True})
-
     return JsonResponse({"success": False, "errors": {"method": "Invalid request"}})
 
 @login_required
@@ -91,50 +101,29 @@ def start_chat(request):
         return redirect('messaging:chat', recipient_username=recipient_username)
 
  
-async def stream_chat_messages(request, recipient_username):
+@login_required
+async def stream_chat_messages(request, chat_room_id):
     user = request.user
     last_id = 0
     KEEP_ALIVE_INTERVAL = 25
     last_keepalive = time.time()
-    recipient = await asyncio.to_thread(
-        lambda: get_object_or_404(Profile, user__username=recipient_username).user
-    )
 
-    async def get_existing_messages() -> AsyncGenerator[str, None]:
-        messages = await asyncio.to_thread(
-            lambda: list(
-                models.Message.objects.filter(
-                    (models.Q(sender=user, recipient=recipient) |
-                     models.Q(sender=recipient, recipient=user))
-                ).order_by("timestamp").values("id", "sender__username", "content")
-            )
-        )
-        for message in messages:
-            yield f"data: {json.dumps(message)}\n\n"
-
-    async def get_last_message_id() -> int:
-        last_message = await asyncio.to_thread(
-            lambda: models.Message.objects.filter(
-                (models.Q(sender=user, recipient=recipient) |
-                 models.Q(sender=recipient, recipient=user))
-            ).order_by("-id").first()
-        )
-        return last_message.id if last_message else 0
+    chat_room = await asyncio.to_thread(lambda: get_object_or_404(ChatRoom, id=chat_room_id))
 
     async def event_stream():
         nonlocal last_id, last_keepalive
         while True:
+            # send keep-alive
             if time.time() - last_keepalive > KEEP_ALIVE_INTERVAL:
                 yield ": keep-alive\n\n"
                 last_keepalive = time.time()
-            # Fetch messages for this chat that are newer than last_id
+
+            # fetch new messages
             new_messages = await asyncio.to_thread(
                 lambda: list(
-                    models.Message.objects.filter(
-                        Q(sender=user, recipient=recipient) |
-                        Q(sender=recipient, recipient=user),
-                        id__gt=last_id
-                    ).order_by("id").values("id", "sender__username", "content")
+                    chat_room.messages.filter(id__gt=last_id)
+                    .order_by("id")
+                    .values("id", "sender__username", "content", "timestamp")
                 )
             )
 
@@ -142,9 +131,9 @@ async def stream_chat_messages(request, recipient_username):
                 yield f"data: {json.dumps(msg)}\n\n"
                 last_id = msg["id"]
 
-            await asyncio.sleep(0.5)  # small delay to avoid DB spam
-    
+            await asyncio.sleep(0.5)
+
     response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
     response["Cache-Control"] = "no-cache"
-    response["X-Accel-Buffering"] = "no"  # disables buffering in proxies (Heroku)
+    response["X-Accel-Buffering"] = "no"
     return response

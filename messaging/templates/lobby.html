@@ -92,7 +92,7 @@
 
       <form method="post" action="{% url 'messaging:lobby' %}">
         {% csrf_token %}
-        <input type="text" name="recipient_username" placeholder="Enter recipient's username" required>
+        <input type="text" name="usernames" placeholder="Enter usernames, comma separated" required>
         <button type="submit">Start Chat</button>
       </form>
       <form action="{% url 'home' %}" method="get" style="margin-top:15px;">

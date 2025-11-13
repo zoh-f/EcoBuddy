@@ -14,6 +14,7 @@ class UserInfo(models.Model):
         validators=[username_validator],
         help_text="Public handle (unique)."
     )
+    display_name = models.CharField(max_length=100, blank=True)  # new
     pronoun   = models.CharField(max_length=50, blank=True)  # optional
     email     = models.EmailField(blank=True)                # populated from Google login
     bio       = models.TextField(blank=True)                 # optional
@@ -23,11 +24,12 @@ class UserInfo(models.Model):
         ordering = ["username"]
 
     def __str__(self):
-        return f"{self.username}"
+        return self.display_name or self.username
 
     def to_dict(self):
         return {
             "username": self.username,
+            "display_name": self.display_name or None,
             "pronoun": self.pronoun or None,
             "email": self.email or None,
             "join_date": self.join_date.strftime("%Y-%m-%d %H:%M:%S"),

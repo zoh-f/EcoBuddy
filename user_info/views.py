@@ -18,10 +18,8 @@ def public_profile(request, username):
 @require_http_methods(["POST"])
 def upsert_profile(request):
     """
-    Minimal create/update endpoint (no UI). Expects JSON body with any of:
-    { "username", "pronoun", "email", "bio" }
-    - If username exists: updates that record.
-    - Else: creates a new record.
+    Create or update a user profile. Supports:
+    { "username", "display_name", "pronoun", "email", "bio" }
     """
     try:
         payload = json.loads(request.body.decode("utf-8"))
@@ -33,11 +31,12 @@ def upsert_profile(request):
         return HttpResponseBadRequest("username is required")
 
     obj, _created = UserInfo.objects.get_or_create(username=username)
-    # Only update fields that are present (and not empty string)
-    for field in ["pronoun", "email", "bio"]:
+
+    # Update fields if present
+    for field in ["display_name", "pronoun", "email", "bio"]:
         if field in payload and payload[field] != "":
             setattr(obj, field, payload[field])
 
-    obj.full_clean()  # run validators (e.g., username regex, email format)
+    obj.full_clean()
     obj.save()
     return JsonResponse(obj.to_dict(), status=201 if _created else 200)

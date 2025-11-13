@@ -4,41 +4,52 @@ from user_info.models import UserInfo
 from .models import Profile
 from .forms import ProfileImageForm
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 
 # Create your views here.
 from django.http import HttpResponse
 
+@login_required
 def home(request):
-    # If user is not logged in, just show the landing/login page
-    if not request.user.is_authenticated:
-        return render(request, "index.html", {
-            "userinfo": None,
-            "profile": None,
-            "form": None,
-        })
-
-    # If logged in, ensure a UserInfo exists
+    # Ensure a UserInfo exists for this user
     userinfo, _ = UserInfo.objects.get_or_create(
         username=request.user.username,
         defaults={"email": request.user.email}
     )
-
-    if userinfo.email == "":
+    if not userinfo.email:
         userinfo.email = request.user.email
         userinfo.save()
 
     # Ensure a Profile exists
     profile, _ = Profile.objects.get_or_create(user=request.user)
 
-    # Handle image upload
+    # Handle POST requests
     if request.method == "POST":
+        # 1️⃣ Handle profile image upload
         form = ProfileImageForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            form.save()     
+            form.save()
+
+        # 2️⃣ Handle display_name and bio updates
+        display_name = request.POST.get("display_name", "").strip()
+        bio = request.POST.get("bio", "").strip()
+
+        if display_name != "":
+            userinfo.display_name = display_name
+        userinfo.bio = bio  # allow empty bio
+
+        try:
+            userinfo.full_clean()
+            userinfo.save()
+        except ValidationError as e:
+            # Optionally, handle validation errors (e.g., show messages)
+            pass
+
+        return redirect("home")  # reload page after saving
+
     else:
         form = ProfileImageForm(instance=profile)
 
-    # Render the logged-in dashboard
     return render(request, "index.html", {
         "userinfo": userinfo,
         "profile": profile,

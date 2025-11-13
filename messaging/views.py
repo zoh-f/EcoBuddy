@@ -19,6 +19,7 @@ from user_dashboard.models import Profile
 from .models import Message, ChatRoom
 from django.contrib import messages
 from django.db.models import Q, Count
+from user_info.models import UserInfo
 import time
 
  
@@ -70,11 +71,34 @@ def chat(request, chat_room_id):
     all_messages = list(chat_room.messages.order_by("timestamp"))
     other_participants = chat_room.participants.exclude(id=request.user.id)
 
+    # Build a mapping of user -> display_name
+    display_names = {}
+    for user in chat_room.participants.all():
+        try:
+            uinfo = UserInfo.objects.get(username=user.username)
+            display_names[user.username] = uinfo.display_name or user.username
+        except UserInfo.DoesNotExist:
+            display_names[user.username] = user.username
+
+    participants = []
+    for u in chat_room.participants.exclude(id=request.user.id):
+        try:
+            uinfo = UserInfo.objects.get(username=u.username)
+            display_name = uinfo.display_name or u.username
+        except UserInfo.DoesNotExist:
+            display_name = u.username
+        participants.append({
+            "user": u,
+            "username": u.username,
+            "display_name": display_name
+        })
+
     return render(request, "chat.html", {
-        "username": request.user.username,
+        "username": display_names.get(request.user.username, request.user.username),
         "chat_room": chat_room,
         "messages": all_messages,
-        "participants": other_participants,
+        "participants": participants,
+        # "display_names": display_names,  # for JS streaming if needed
     })
 
  
@@ -94,45 +118,45 @@ def create_message(request):
         )
         return JsonResponse({"success": True})
     return JsonResponse({"success": False, "errors": {"method": "Invalid request"}})
-
-@login_required
-def start_chat(request):
-    if request.method == "GET":
-        recipient_username = request.GET.get('recipient_username', '').strip()
-        return redirect('messaging:chat', recipient_username=recipient_username)
-
  
+
 @login_required
-async def stream_chat_messages(request, chat_room_id):
+def stream_chat_messages(request, chat_room_id):
     user = request.user
     last_id = 0
     KEEP_ALIVE_INTERVAL = 25
     last_keepalive = time.time()
 
-    chat_room = await asyncio.to_thread(lambda: get_object_or_404(ChatRoom, id=chat_room_id))
+    chat_room = get_object_or_404(ChatRoom, id=chat_room_id)
 
-    async def event_stream():
+    def get_display_name(username):
+        try:
+            uinfo = UserInfo.objects.get(username=username)
+            return uinfo.display_name or username
+        except UserInfo.DoesNotExist:
+            return username
+
+    def event_stream():
         nonlocal last_id, last_keepalive
         while True:
-            # send keep-alive
+            # keep-alive
             if time.time() - last_keepalive > KEEP_ALIVE_INTERVAL:
                 yield ": keep-alive\n\n"
                 last_keepalive = time.time()
 
             # fetch new messages
-            new_messages = await asyncio.to_thread(
-                lambda: list(
-                    chat_room.messages.filter(id__gt=last_id)
-                    .order_by("id")
-                    .values("id", "sender__username", "content", "timestamp")
-                )
+            new_messages = list(
+                chat_room.messages.filter(id__gt=last_id)
+                .order_by("id")
+                .values("id", "sender__username", "content", "timestamp")
             )
 
             for msg in new_messages:
+                msg["sender_display_name"] = get_display_name(msg["sender__username"])
                 yield f"data: {json.dumps(msg)}\n\n"
                 last_id = msg["id"]
 
-            await asyncio.sleep(0.5)
+            time.sleep(0.5)
 
     response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
     response["Cache-Control"] = "no-cache"

@@ -113,7 +113,7 @@
   <label for="bio" style="display:block; margin-top:12px; font-weight:500;">Bio:</label>
   <textarea id="bio" name="bio"
             style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; font-size:16px;"
-            rows="4">{{ profile.bio|default:"" }}</textarea>
+            rows="4">{{ userinfo.bio|default:"" }}</textarea>
 
   <button type="submit" class="btn" style="margin-top:16px;">Save Changes</button>
 </form>

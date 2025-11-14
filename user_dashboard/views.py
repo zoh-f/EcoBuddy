@@ -5,6 +5,7 @@ from .models import Profile
 from .forms import ProfileImageForm
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
 # Create your views here.
 from django.http import HttpResponse
@@ -68,10 +69,28 @@ def logout_view(request):
     logout(request)
     return redirect('/')
 
-def admin_page(request):
-    profiles = Profile.objects.select_related("user").filter(user__is_superuser=False).order_by("-joined_at")
+from user_info.models import UserInfo
 
-    context = {
-        "profiles": profiles
-    }
-    return render(request, "admin_page.html", context)
+def admin_page(request):
+    # Get all non-superuser users and their profiles
+    users = User.objects.select_related("profile").filter(is_superuser=False)
+
+    profiles_with_info = []
+    for u in users:
+        try:
+            info = UserInfo.objects.get(username=u.username)
+        except UserInfo.DoesNotExist:
+            info = None
+
+        profiles_with_info.append({
+            "user": u,
+            "role": u.profile.role if hasattr(u, "profile") else "N/A",
+            "joined_at": u.profile.joined_at if hasattr(u, "profile") else None,
+            "display_name": info.display_name if info else u.username,
+            "bio": info.bio if info else "",
+        })
+
+    return render(request, "admin_page.html", {
+        "profiles": profiles_with_info
+    })
+

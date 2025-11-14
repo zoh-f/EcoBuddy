@@ -34,6 +34,17 @@ def lobby(request):
 
     current_chats = ChatRoom.objects.filter(participants=request.user)
 
+    # Build display names dict for all users in current chats
+    display_names_dict = {}
+    for chat in current_chats:
+        for user in chat.participants.all():
+            if user.username not in display_names_dict:
+                try:
+                    uinfo = UserInfo.objects.get(username=user.username)
+                    display_names_dict[user.username] = uinfo.display_name or user.username
+                except UserInfo.DoesNotExist:
+                    display_names_dict[user.username] = user.username
+
     users_with_names = []
     for u in all_users:
         try:
@@ -47,10 +58,16 @@ def lobby(request):
             "user_obj": u
         })
 
+    for chat in current_chats:
+        chat.display_names = [
+            display_names_dict[u.username] for u in chat.participants.exclude(id=request.user.id)
+    ]
+
     return render(request, "lobby.html", {
         "all_users": all_users,
         "current_chats": current_chats,
-        "users_with_names": users_with_names
+        "users_with_names": users_with_names,
+        "display_names": display_names_dict,
     })
 
 

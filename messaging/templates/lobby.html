@@ -151,24 +151,19 @@ userSearch.addEventListener('input', () => {
 });
 </script>
 
-
-      <!-- Current Chats -->
-      <div class="current-chats">
-        <h3>Your Current Chats</h3>
-        <ul>
-          {% for chat in current_chats %}
-            <li onclick="location.href='{% url 'messaging:chat' chat_room_id=chat.id %}'">
-              {% for p in chat.participants.all %}
-                {% if p != user %}
-                  {{ p.username }}{% if not forloop.last %}, {% endif %}
-                {% endif %}
-              {% endfor %}
-            </li>
-          {% empty %}
-            <li>No active chats.</li>
-          {% endfor %}
-        </ul>
-      </div>
+<!-- Current Chats -->
+<div class="current-chats">
+  <h3>Your Current Chats</h3>
+  <ul>
+    {% for chat in current_chats %}
+      <li onclick="location.href='{% url 'messaging:chat' chat_room_id=chat.id %}'">
+    {{ chat.display_names|join:", " }}
+</li>
+    {% empty %}
+      <li>No active chats.</li>
+    {% endfor %}
+  </ul>
+</div>
 
       <form action="{% url 'home' %}" method="get" style="margin-top:15px;">
         <button type="submit" style="width:100%; background:#0a3d62; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer;">

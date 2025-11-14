@@ -106,7 +106,7 @@
 
   <body>
     <div class="header">
-      <h1>Welcome {{ username }}</h1>
+      <h1>Welcome {{ display_name }}</h1>
       <h2>Chat with 
         {% for p in participants %}
           {{ p.display_name }}{% if not forloop.last %}, {% endif %}
@@ -116,25 +116,22 @@
 
     <div class="container">
       <div class="messages" id="messages">
-        {% for msg in messages %}
-          {% if msg.sender.username == username %}
-            <div class="message-box sent">
-          {% else %}
-            <div class="message-box received">
-          {% endif %}
-              <div class="message-author">
-                {% if msg.sender.username == username %}
-                  You
-                {% else %}
-                  {{ msg.sender.username }}
-                {% endif %}
-                <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">
-                  {{ msg.timestamp|date:"Y-m-d H:i" }}
-                </span>
-              </div>
-              <div class="message-content">{{ msg.content }}</div>
-            </div>
-        {% endfor %}
+  {% for msg in messages %}
+  <div class="message-box {% if msg.sender.username == username %}sent{% else %}received{% endif %}">
+    <div class="message-author">
+      {% if msg.sender.username == username %}
+        You
+      {% else %}
+        {{ msg.display_name }}
+      {% endif %}
+      <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">
+        {{ msg.timestamp|date:"Y-m-d H:i" }}
+      </span>
+    </div>
+    <div class="message-content">{{ msg.content }}</div>
+  </div>
+{% endfor %}
+
       </div>
 
       <form x-cloak @submit.prevent="submit" x-data="{state: 'composing', errors: {}}">

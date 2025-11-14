@@ -62,12 +62,19 @@ def lobby(request):
         chat.display_names = [
             display_names_dict[u.username] for u in chat.participants.exclude(id=request.user.id)
     ]
+        
+    try:
+        uinfo = UserInfo.objects.get(username=request.user.username)
+        current_display_name = uinfo.display_name or request.user.username
+    except UserInfo.DoesNotExist:
+        current_display_name = request.user.username
 
     return render(request, "lobby.html", {
         "all_users": all_users,
         "current_chats": current_chats,
         "users_with_names": users_with_names,
         "display_names": display_names_dict,
+        "current_display_name": current_display_name,
     })
 
 
@@ -77,7 +84,7 @@ def chat(request, chat_room_id):
     if request.user not in chat_room.participants.all():
         return HttpResponse("You are not a participant in this chat.", status=403)
 
-    all_messages = list(chat_room.messages.order_by("timestamp"))
+    # Build display name dictionary
     display_names = {}
     for user in chat_room.participants.all():
         try:
@@ -85,6 +92,12 @@ def chat(request, chat_room_id):
             display_names[user.username] = uinfo.display_name or user.username
         except UserInfo.DoesNotExist:
             display_names[user.username] = user.username
+
+    # Fetch messages and annotate display names
+    all_messages = []
+    for msg in chat_room.messages.order_by("timestamp"):
+        msg.display_name = display_names.get(msg.sender.username, msg.sender.username)
+        all_messages.append(msg)
 
     participants = []
     for u in chat_room.participants.exclude(id=request.user.id):
@@ -95,10 +108,12 @@ def chat(request, chat_room_id):
         })
 
     return render(request, "chat.html", {
-        "username": display_names.get(request.user.username, request.user.username),
+        "username": request.user.username,  # actual username for logic
+        "display_name": display_names.get(request.user.username, request.user.username),
         "chat_room": chat_room,
         "messages": all_messages,
         "participants": participants,
+        "display_names": display_names,  # pass it just in case JS needs it
     })
 
 

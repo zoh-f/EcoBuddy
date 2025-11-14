@@ -6,6 +6,6 @@ urlpatterns = [
     path('lobby/', views.lobby, name='lobby'),
     path('chat/<int:chat_room_id>/', views.chat, name='chat'),
     path('create-message/', views.create_message, name='create-message'),
-    path("stream-chat-messages/<int:chat_room_id>/", views.stream_chat_messages, name="stream_chat_messages")
+    path("poll-chat-messages/<int:chat_room_id>/", views.poll_chat_messages, name="poll_chat_messages"),
 
 ]

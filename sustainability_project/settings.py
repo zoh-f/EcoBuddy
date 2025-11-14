@@ -152,10 +152,6 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'  # optional for dev
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_ADAPTER = 'user_dashboard.adapter.MySocialAccountAdapter'
 
-
-
-
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 

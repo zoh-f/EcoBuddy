@@ -128,11 +128,12 @@
 <input type="text" id="user-search" placeholder="Type to filter users..." style="padding:12px; margin-bottom:10px; border-radius:6px; border:1px solid #ced6e0;">
 
   <select name="participants" id="participants" multiple required style="padding:12px; margin-bottom:15px; border-radius:6px; border:1px solid #ced6e0;">
-    {% for user in all_users %}
-      {% if user != request.user %}
-        <option value="{{ user.username }}">{{ user.username }}</option>
-      {% endif %}
-    {% endfor %}
+  {% for u in users_with_names %}
+    {% if u.user_obj != request.user %}
+      <option value="{{ u.username }}">{{ u.display_name }}</option>
+    {% endif %}
+  {% endfor %}
+</select>
   </select>
   <button type="submit">Start Chat</button>
 </form>

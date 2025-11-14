@@ -92,10 +92,32 @@
         <!-- Profile info -->
         <ul style="font-size:18px; line-height:1.6; margin-top:20px;">
           <li><strong>Username:</strong> {{ user.username }}</li>
+          <li><strong>Display Name:</strong> {{ userinfo.display_name|default:user.username }}</li>
           <li><strong>Email:</strong> {{ user.email }}</li>
-          <li><strong>Bio:</strong> {{ profile.bio|default:"N/A" }}</li>
+          <li><strong>Bio:</strong> {{ userinfo.bio|default:"N/A" }}</li>
           <li><strong>Joined:</strong> {{ profile.joined_at|date:"F j, Y" }}</li>
         </ul>
+
+        <!-- Editable profile info -->
+<form method="POST" style="margin-top:20px;">
+  {% csrf_token %}
+  <h3 style="font-size:22px; font-weight:600;">Edit Profile</h3>
+  
+  <!-- Display Name -->
+  <label for="display_name" style="display:block; margin-top:12px; font-weight:500;">Display Name:</label>
+  <input type="text" id="display_name" name="display_name"
+         value="{{ userinfo.display_name|default:user.username }}"
+         style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; font-size:16px;" />
+
+  <!-- Bio -->
+  <label for="bio" style="display:block; margin-top:12px; font-weight:500;">Bio:</label>
+  <textarea id="bio" name="bio"
+            style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; font-size:16px;"
+            rows="4">{{ userinfo.bio|default:"" }}</textarea>
+
+  <button type="submit" class="btn" style="margin-top:16px;">Save Changes</button>
+</form>
+
 
         <!-- Links for navigation -->
         <p style="margin-top:20px;">

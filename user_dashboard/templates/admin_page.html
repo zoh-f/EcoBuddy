@@ -1,40 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - User Overview</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
-        th {
-            background: #4CAF50;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        .btn {
-            background: #4CAF50;
-            color: white;
-            padding: 8px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .btn:hover {
-            background: #45a049;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - User Overview</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f7f7f7;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .btn {
+      display: inline-block;
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #45a049;
+    }
+  </style>
 </head>
 <body>
 
@@ -54,14 +80,14 @@
         </tr>
     </thead>
     <tbody>
-        {% for profile in profiles %}
+        {% for p in profiles %}
         <tr>
-            <td>{{ profile.user.username }}</td>
-            <td>{{ profile.role }}</td>
-            <td>{{ profile.user.email }}</td>
-            <td>{{ profile.display_name|default:"N/A" }}</td>
-            <td>{{ profile.bio|default:"N/A" }}</td>
-            <td>{{ profile.joined_at|date:"F j, Y" }}</td>
+            <td>{{ p.user.username }}</td>
+            <td>{{ p.role }}</td>
+            <td>{{ p.user.email }}</td>
+            <td>{{ p.display_name|default:"N/A" }}</td>
+            <td>{{ p.bio|default:"N/A" }}</td>
+            <td>{% if p.joined_at %}{{ p.joined_at|date:"F j, Y" }}{% else %}N/A{% endif %}</td>
         </tr>
         {% empty %}
         <tr>

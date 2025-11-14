@@ -116,7 +116,7 @@
 
       {% if user.is_authenticated %}
         <p style="text-align:center;">
-          Logged in as: <strong>{{ user.username }}</strong>
+          Logged in as: <strong>{{ current_display_name }}</strong>
         </p>
       {% endif %}
 
@@ -128,11 +128,12 @@
 <input type="text" id="user-search" placeholder="Type to filter users..." style="padding:12px; margin-bottom:10px; border-radius:6px; border:1px solid #ced6e0;">
 
   <select name="participants" id="participants" multiple required style="padding:12px; margin-bottom:15px; border-radius:6px; border:1px solid #ced6e0;">
-    {% for user in all_users %}
-      {% if user != request.user %}
-        <option value="{{ user.username }}">{{ user.username }}</option>
-      {% endif %}
-    {% endfor %}
+  {% for u in users_with_names %}
+    {% if u.user_obj != request.user %}
+      <option value="{{ u.username }}">{{ u.display_name }}</option>
+    {% endif %}
+  {% endfor %}
+</select>
   </select>
   <button type="submit">Start Chat</button>
 </form>
@@ -150,24 +151,19 @@ userSearch.addEventListener('input', () => {
 });
 </script>
 
-
-      <!-- Current Chats -->
-      <div class="current-chats">
-        <h3>Your Current Chats</h3>
-        <ul>
-          {% for chat in current_chats %}
-            <li onclick="location.href='{% url 'messaging:chat' chat_room_id=chat.id %}'">
-              {% for p in chat.participants.all %}
-                {% if p != user %}
-                  {{ p.username }}{% if not forloop.last %}, {% endif %}
-                {% endif %}
-              {% endfor %}
-            </li>
-          {% empty %}
-            <li>No active chats.</li>
-          {% endfor %}
-        </ul>
-      </div>
+<!-- Current Chats -->
+<div class="current-chats">
+  <h3>Your Current Chats</h3>
+  <ul>
+    {% for chat in current_chats %}
+      <li onclick="location.href='{% url 'messaging:chat' chat_room_id=chat.id %}'">
+    {{ chat.display_names|join:", " }}
+</li>
+    {% empty %}
+      <li>No active chats.</li>
+    {% endfor %}
+  </ul>
+</div>
 
       <form action="{% url 'home' %}" method="get" style="margin-top:15px;">
         <button type="submit" style="width:100%; background:#0a3d62; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer;">

@@ -1,27 +1,13 @@
-from django.shortcuts import render
-
-# Create your views here.
-from datetime import datetime
-import asyncio
- 
-from typing import AsyncGenerator
-from django.shortcuts import render, redirect
-from django.http import HttpRequest, StreamingHttpResponse, HttpResponse
-from . import models
-from django.db import models
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User
-import json
-import random
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from user_dashboard.models import Profile
-from .models import Message, ChatRoom
 from django.contrib import messages
-from django.db.models import Q, Count
-import time
+from django.db.models import Count
+from user_info.models import UserInfo
+from .models import Message, ChatRoom
+from django.utils.dateformat import format as dj_format
 
- 
 @login_required
 def lobby(request):
     all_users = User.objects.all()
@@ -46,38 +32,91 @@ def lobby(request):
         chat_room.save()
         return redirect("messaging:chat", chat_room_id=chat_room.id)
 
-    # fetch chats where the current user is a participant
     current_chats = ChatRoom.objects.filter(participants=request.user)
 
-    return render(
-        request,
-        "lobby.html",
-        {
-            "all_users": all_users,
-            "current_chats": current_chats,
-        },
-    )
+    # Build display names dict for all users in current chats
+    display_names_dict = {}
+    for chat in current_chats:
+        for user in chat.participants.all():
+            if user.username not in display_names_dict:
+                try:
+                    uinfo = UserInfo.objects.get(username=user.username)
+                    display_names_dict[user.username] = uinfo.display_name or user.username
+                except UserInfo.DoesNotExist:
+                    display_names_dict[user.username] = user.username
 
+    users_with_names = []
+    for u in all_users:
+        try:
+            uinfo = UserInfo.objects.get(username=u.username)
+            dn = uinfo.display_name or u.username
+        except UserInfo.DoesNotExist:
+            dn = u.username
+        users_with_names.append({
+            "username": u.username,
+            "display_name": dn,
+            "user_obj": u
+        })
+
+    for chat in current_chats:
+        chat.display_names = [
+            display_names_dict[u.username] for u in chat.participants.exclude(id=request.user.id)
+    ]
+        
+    try:
+        uinfo = UserInfo.objects.get(username=request.user.username)
+        current_display_name = uinfo.display_name or request.user.username
+    except UserInfo.DoesNotExist:
+        current_display_name = request.user.username
+
+    return render(request, "lobby.html", {
+        "all_users": all_users,
+        "current_chats": current_chats,
+        "users_with_names": users_with_names,
+        "display_names": display_names_dict,
+        "current_display_name": current_display_name,
+    })
 
 
 @login_required
 def chat(request, chat_room_id):
     chat_room = get_object_or_404(ChatRoom, id=chat_room_id)
-
     if request.user not in chat_room.participants.all():
         return HttpResponse("You are not a participant in this chat.", status=403)
 
-    all_messages = list(chat_room.messages.order_by("timestamp"))
-    other_participants = chat_room.participants.exclude(id=request.user.id)
+    # Build display name dictionary
+    display_names = {}
+    for user in chat_room.participants.all():
+        try:
+            uinfo = UserInfo.objects.get(username=user.username)
+            display_names[user.username] = uinfo.display_name or user.username
+        except UserInfo.DoesNotExist:
+            display_names[user.username] = user.username
+
+    # Fetch messages and annotate display names
+    all_messages = []
+    for msg in chat_room.messages.order_by("timestamp"):
+        msg.display_name = display_names.get(msg.sender.username, msg.sender.username)
+        all_messages.append(msg)
+
+    participants = []
+    for u in chat_room.participants.exclude(id=request.user.id):
+        participants.append({
+            "user": u,
+            "username": u.username,
+            "display_name": display_names.get(u.username, u.username)
+        })
 
     return render(request, "chat.html", {
-        "username": request.user.username,
+        "username": request.user.username,  # actual username for logic
+        "display_name": display_names.get(request.user.username, request.user.username),
         "chat_room": chat_room,
         "messages": all_messages,
-        "participants": other_participants,
+        "participants": participants,
+        "display_names": display_names,  # pass it just in case JS needs it
     })
 
- 
+
 @login_required
 def create_message(request):
     if request.method == "POST":
@@ -93,48 +132,31 @@ def create_message(request):
             content=content
         )
         return JsonResponse({"success": True})
+
     return JsonResponse({"success": False, "errors": {"method": "Invalid request"}})
 
+
 @login_required
-def start_chat(request):
-    if request.method == "GET":
-        recipient_username = request.GET.get('recipient_username', '').strip()
-        return redirect('messaging:chat', recipient_username=recipient_username)
+def poll_chat_messages(request, chat_room_id):
+    """AJAX polling endpoint for chat messages"""
+    chat_room = get_object_or_404(ChatRoom, id=chat_room_id)
+    last_id = int(request.GET.get("after", 0))
+    messages_qs = chat_room.messages.filter(id__gt=last_id).order_by("id")
+    new_messages = []
 
- 
-@login_required
-async def stream_chat_messages(request, chat_room_id):
-    user = request.user
-    last_id = 0
-    KEEP_ALIVE_INTERVAL = 25
-    last_keepalive = time.time()
+    for msg in messages_qs:
+        try:
+            uinfo = UserInfo.objects.get(username=msg.sender.username)
+            display_name = uinfo.display_name or msg.sender.username
+        except UserInfo.DoesNotExist:
+            display_name = msg.sender.username
 
-    chat_room = await asyncio.to_thread(lambda: get_object_or_404(ChatRoom, id=chat_room_id))
+        new_messages.append({
+            "id": msg.id,
+            "sender": msg.sender.username,
+            "display_name": display_name,
+            "content": msg.content,
+            "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        })
 
-    async def event_stream():
-        nonlocal last_id, last_keepalive
-        while True:
-            # send keep-alive
-            if time.time() - last_keepalive > KEEP_ALIVE_INTERVAL:
-                yield ": keep-alive\n\n"
-                last_keepalive = time.time()
-
-            # fetch new messages
-            new_messages = await asyncio.to_thread(
-                lambda: list(
-                    chat_room.messages.filter(id__gt=last_id)
-                    .order_by("id")
-                    .values("id", "sender__username", "content", "timestamp")
-                )
-            )
-
-            for msg in new_messages:
-                yield f"data: {json.dumps(msg)}\n\n"
-                last_id = msg["id"]
-
-            await asyncio.sleep(0.5)
-
-    response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
-    response["Cache-Control"] = "no-cache"
-    response["X-Accel-Buffering"] = "no"
-    return response
+    return JsonResponse({"messages": new_messages})

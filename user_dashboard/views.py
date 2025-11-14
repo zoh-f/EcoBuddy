@@ -4,12 +4,14 @@ from user_info.models import UserInfo
 from .models import Profile
 from .forms import ProfileImageForm
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
 # Create your views here.
 from django.http import HttpResponse
 
 def home(request):
-    # If user is not logged in, just show the landing/login page
+    # --- Anonymous users see landing page ---
     if not request.user.is_authenticated:
         return render(request, "index.html", {
             "userinfo": None,
@@ -17,28 +19,46 @@ def home(request):
             "form": None,
         })
 
-    # If logged in, ensure a UserInfo exists
+    # --- Authenticated users see dashboard/profile ---
+    # Ensure a UserInfo exists for this user
     userinfo, _ = UserInfo.objects.get_or_create(
         username=request.user.username,
         defaults={"email": request.user.email}
     )
-
-    if userinfo.email == "":
+    if not userinfo.email:
         userinfo.email = request.user.email
         userinfo.save()
 
     # Ensure a Profile exists
     profile, _ = Profile.objects.get_or_create(user=request.user)
 
-    # Handle image upload
+    # Handle POST requests (profile picture, bio, display_name)
     if request.method == "POST":
+        # Profile image
         form = ProfileImageForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            form.save()     
+            form.save()
+
+        # Display name & bio
+        display_name = request.POST.get("display_name", "").strip()
+        bio = request.POST.get("bio", "").strip()
+
+        if display_name:
+            userinfo.display_name = display_name
+        userinfo.bio = bio  # allow empty
+
+        try:
+            userinfo.full_clean()
+            userinfo.save()
+        except ValidationError as e:
+            # optionally handle validation errors
+            pass
+
+        return redirect("home")  # reload page
+
     else:
         form = ProfileImageForm(instance=profile)
 
-    # Render the logged-in dashboard
     return render(request, "index.html", {
         "userinfo": userinfo,
         "profile": profile,
@@ -49,10 +69,28 @@ def logout_view(request):
     logout(request)
     return redirect('/')
 
-def admin_page(request):
-    profiles = Profile.objects.select_related("user").filter(user__is_superuser=False).order_by("-joined_at")
+from user_info.models import UserInfo
 
-    context = {
-        "profiles": profiles
-    }
-    return render(request, "admin_page.html", context)
+def admin_page(request):
+    # Get all non-superuser users and their profiles
+    users = User.objects.select_related("profile").filter(is_superuser=False)
+
+    profiles_with_info = []
+    for u in users:
+        try:
+            info = UserInfo.objects.get(username=u.username)
+        except UserInfo.DoesNotExist:
+            info = None
+
+        profiles_with_info.append({
+            "user": u,
+            "role": u.profile.role if hasattr(u, "profile") else "N/A",
+            "joined_at": u.profile.joined_at if hasattr(u, "profile") else None,
+            "display_name": info.display_name if info else u.username,
+            "bio": info.bio if info else "",
+        })
+
+    return render(request, "admin_page.html", {
+        "profiles": profiles_with_info
+    })
+

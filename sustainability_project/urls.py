@@ -25,5 +25,8 @@ urlpatterns = [
     path("profiles/<str:username>/", public_profile, name="public-profile"),
     path("profiles/upsert/", upsert_profile, name="upsert-profile"),
     path('accounts/', include('allauth.urls')), 
-    path('', include('user_dashboard.urls')),   
+    path("admin_page/", views.admin_page, name="admin_page"),
+    path("", views.home, name="home"),
+    path("logout/", views.logout_view, name="logout"),
+    path('messaging/', include('messaging.urls')),   
 ]   

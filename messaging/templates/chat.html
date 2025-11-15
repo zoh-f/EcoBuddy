@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Room</title>
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        background-color: #e8eff1;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+
+      .header {
+        color: #022c22;
+        font-size: 14px;
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .container {
+        max-width: 60%;
+        margin: auto;
+      }
+
+      .messages {
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        height: 50vh;
+        overflow-y: scroll;
+      }
+
+      .message-box {
+        margin-bottom: 12px;
+        padding: 10px 15px;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .message-box.sent {
+        background: #e8f5e9;
+        border-left: 4px solid #2ecc71;
+      }
+
+      .message-box.received {
+        background: #f1f5f9;
+        border-left: 4px solid #186ce2;
+      }
+
+      .message-author {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .message-content {
+        font-size: 16px;
+        line-height: 1.4;
+      }
+
+      textarea {
+        background: #f8f9fa;
+        border: 1px solid #ced4da;
+        box-sizing: border-box;
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 6px;
+        min-height: 100px;
+        font-size: 16px;
+        line-height: 1.5;
+        resize: none;
+        outline: none;
+        margin-bottom: 15px;
+      }
+
+      button {
+        padding: 15px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #27ae60;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <h1>Welcome {{ display_name }}</h1>
+      <h2>Chat with 
+        {% for p in participants %}
+          {{ p.display_name }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      </h2>
+    </div>
+
+    <div class="container">
+      <div class="messages" id="messages">
+  {% for msg in messages %}
+  <div class="message-box {% if msg.sender.username == username %}sent{% else %}received{% endif %}">
+    <div class="message-author">
+      {% if msg.sender.username == username %}
+        You
+      {% else %}
+        {{ msg.display_name }}
+      {% endif %}
+      <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">
+        {{ msg.timestamp|date:"Y-m-d H:i" }}
+      </span>
+    </div>
+    <div class="message-content">{{ msg.content }}</div>
+  </div>
+{% endfor %}
+
+      </div>
+
+      <form x-cloak @submit.prevent="submit" x-data="{state: 'composing', errors: {}}">
+        {% csrf_token %}
+        <input type="hidden" name="sender_username" value="{{ username }}">
+        <input type="hidden" name="chat_room_id" value="{{ chat_room.id }}">
+        <textarea name="content" placeholder="Type your message..." required></textarea>
+        <button type="submit">Send</button>
+
+        <div x-show="state === 'error'">
+          <p>Error sending your message.</p>
+        </div>
+      </form>
+
+      <form action="{% url 'messaging:lobby' %}" method="get">
+        <button type="submit" style="margin-top: 10px; margin-bottom: 10px;">Return to Lobby</button>
+      </form>
+    </div>
+
+    <script>
+      const CURRENT_USER = "{{ username|escapejs }}";
+
+      {% if messages and messages|length %}
+        {% with last_msg=messages|last %}
+          {% if last_msg %}
+            let LAST_RENDERED_ID = {{ last_msg.id }};
+          {% else %}
+            let LAST_RENDERED_ID = 0;
+          {% endif %}
+        {% endwith %}
+      {% else %}
+        let LAST_RENDERED_ID = 0;
+      {% endif %}
+
+      const chatRoomId = "{{ chat_room.id }}";
+      const messagesContainer = document.getElementById("messages");
+
+      function appendMessage(sender, content, isSelf=false) {
+        const messageHTML = `
+          <div class="message-box ${isSelf ? 'sent' : 'received'}">
+            <div class="message-author">
+              ${isSelf ? 'You' : sender}
+              <span style="font-weight:400; color:#666; margin-left:8px; font-size:12px;">
+                just now
+              </span>
+            </div>
+            <div class="message-content">${content}</div>
+          </div>`;
+        messagesContainer.innerHTML += messageHTML;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      function submit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        fetch("{% url 'messaging:create-message' %}", {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            appendMessage("You", formData.get("content"), true);
+            form.querySelector("textarea").value = "";
+          } else {
+            console.error(data.errors);
+          }
+        })
+        .catch(err => console.error(err));
+      }
+
+      // SSE (Server-Sent Events) for new messages
+      if (typeof EventSource !== 'undefined') {
+        const eventSource = new EventSource(`/messaging/poll-chat-messages/${chatRoomId}/?after=${LAST_RENDERED_ID}`);
+        eventSource.onmessage = (event) => {
+          if (!event.data || event.data === "keep-alive") return;
+          const data = JSON.parse(event.data);
+          if (data.id <= LAST_RENDERED_ID) return;
+          LAST_RENDERED_ID = data.id;
+          appendMessage(data.sender, data.content, data.sender === CURRENT_USER);
+        };
+      } else {
+        console.warn("Your browser doesn't support EventSource.");
+      }
+    </script>
+
+    
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.3/dist/cdn.min.js"></script>
+  </body>
+</html>

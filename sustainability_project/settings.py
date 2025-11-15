@@ -43,6 +43,7 @@ else:
     
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'daphne',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -55,7 +56,21 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'storages',
+    'messaging',
 ]
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AWS_ACCESS_KEY_ID = 'AKIA5ESN3RAOAMNXRPO3'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'ecobuddy-files'
+AWS_S3_REGION_NAME = 'us-east-2'
+
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+AWS_DEFAULT_ACL = 'public-read'
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -99,6 +114,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'sustainability_project.wsgi.application'
+ASGI_APPLICATION = 'sustainability_project.asgi.application'
 
 #Authentication Backends
 AUTHENTICATION_BACKENDS = (
@@ -135,10 +151,6 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # optional for dev
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_ADAPTER = 'user_dashboard.adapter.MySocialAccountAdapter'
-
-
-
-
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

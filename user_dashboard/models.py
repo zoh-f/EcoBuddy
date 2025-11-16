@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from uuid import uuid4
+from pathlib import Path
 
 class Profile(models.Model):
     USER = "user"

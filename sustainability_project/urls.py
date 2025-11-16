@@ -28,5 +28,6 @@ urlpatterns = [
     path("admin_page/", views.admin_page, name="admin_page"),
     path("", views.home, name="home"),
     path("logout/", views.logout_view, name="logout"),
+    path('', include('user_dashboard.urls')),
     path('messaging/', include('messaging.urls')),   
 ]   

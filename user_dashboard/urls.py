@@ -12,6 +12,10 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("post_page/", views.posts_page, name="post_page"),
     path("create_post/", views.create_post, name="create_post"),
+
+    # Account deletion routes
+    path("settings/", views.account_settings, name="account_settings"),
+    path("delete-account/", views.delete_account, name="delete_account"),
 ]
 
 if settings.DEBUG:

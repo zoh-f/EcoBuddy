@@ -131,6 +131,14 @@
                 <div class="stat-number">{{ total_reviewed_today }}</div>
                 <div>Reviewed Today</div>
             </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ total_suspended }}</div>
+                <div>Suspended Users</div>
+            </div>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <a href="{% url 'suspended_users_list' %}" class="back-link" style="margin: 0;">View Suspended Users →</a>
         </div>
 
         <div class="flag-list">
@@ -172,6 +180,9 @@
                         <a href="{% url 'remove_post' %}?id={{ flag.content_id }}&flag={{ flag.id }}" class="btn btn-danger">Remove Post</a>
                         {% elif flag.content_type == 'message' %}
                         <a href="{% url 'remove_message' %}?id={{ flag.content_id }}&flag={{ flag.id }}" class="btn btn-danger">Remove Message</a>
+                        {% endif %}
+                        {% if flag.flagged_user %}
+                        <a href="{% url 'suspend_user' %}?id={{ flag.flagged_user.id }}&flag={{ flag.id }}" class="btn btn-danger">Suspend User</a>
                         {% endif %}
                         <a href="{% url 'dismiss_flag' %}?id={{ flag.id }}" class="btn btn-secondary">Dismiss Flag</a>
                     </div>

@@ -128,7 +128,8 @@
 
     {% if profile and profile.can_moderate %}
     <p style="font-size:18px; color:#ff6b6b;">🛡️ You have moderator privileges.</p>
-    <a href="{% url 'moderation_dashboard' %}" class="link">Go to Moderation Dashboard</a>
+    <a href="{% url 'moderation_dashboard' %}" class="link">Go to Moderation Dashboard</a> |
+    <a href="{% url 'suspended_users_list' %}" class="link">Suspended Users</a>
     {% endif %}
 
     {% if profile and profile.role == 'admin' %}

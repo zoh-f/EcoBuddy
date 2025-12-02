@@ -23,6 +23,12 @@ urlpatterns = [
     path("moderation/remove-post/", views.remove_post, name="remove_post"),
     path("moderation/remove-message/", views.remove_message, name="remove_message"),
     path("moderation/dismiss/", views.dismiss_flag, name="dismiss_flag"),
+
+    # User suspension routes
+    path("moderation/suspend/", views.suspend_user, name="suspend_user"),
+    path("moderation/reinstate/", views.reinstate_user, name="reinstate_user"),
+    path("moderation/suspended-users/", views.suspended_users_list, name="suspended_users_list"),
+    path("account-suspended/", views.account_suspended, name="account_suspended"),
 ]
 
 if settings.DEBUG:

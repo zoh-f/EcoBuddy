@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Suspended</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff7e6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #d32f2f;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .warning-icon {
+            font-size: 64px;
+            color: #d32f2f;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #ffebee;
+            border-left: 4px solid #d32f2f;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+            text-align: left;
+        }
+
+        .info-box p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #d32f2f;
+        }
+
+        .permanent-notice {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .permanent-notice p {
+            margin: 0;
+            color: #856404;
+        }
+
+        .logout-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #757575;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #616161;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="warning-icon">⚠️</div>
+        <h1>Your Account Has Been Suspended</h1>
+
+        <div class="info-box">
+            <p><strong>Suspended on:</strong> {{ profile.suspended_at|date:"F j, Y, g:i a" }}</p>
+            <p><strong>Reason:</strong> {{ profile.suspension_reason }}</p>
+        </div>
+
+        <div class="permanent-notice">
+            <p><strong>This is a permanent suspension.</strong><br>
+            If you believe this is an error, please contact support.</p>
+        </div>
+
+        <a href="{% url 'logout' %}" class="logout-btn">Log Out</a>
+    </div>
+</body>
+</html>

@@ -26,6 +26,26 @@ class Profile(models.Model):
         null=True
     )
 
+    # Suspension fields
+    is_suspended = models.BooleanField(default=False)
+    suspension_reason = models.TextField(blank=True)
+    suspended_at = models.DateTimeField(null=True, blank=True)
+    suspended_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users_suspended'
+    )
+    reinstated_at = models.DateTimeField(null=True, blank=True)
+    reinstated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users_reinstated'
+    )
+
     def __str__(self):
         return f"{self.user.username} ({self.role})"
 

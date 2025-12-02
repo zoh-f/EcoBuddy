@@ -312,6 +312,7 @@ def moderation_dashboard(request):
 
     total_pending = pending_flags.count()
     total_reviewed_today = Flag.objects.filter(reviewed_at__date=timezone.now().date()).count()
+    total_suspended = Profile.objects.filter(is_suspended=True).count()
 
     for flag in pending_flags:
         flag.content_obj = flag.get_content_object()
@@ -322,6 +323,7 @@ def moderation_dashboard(request):
         'recent_reviews': recent_reviews,
         'total_pending': total_pending,
         'total_reviewed_today': total_reviewed_today,
+        'total_suspended': total_suspended,
     }
 
     return render(request, 'user_dashboard/moderation_dashboard.html', context)
@@ -413,3 +415,90 @@ def dismiss_flag(request):
         return redirect('moderation_dashboard')
 
     return render(request, 'user_dashboard/dismiss_flag.html', {'flag': flag})
+
+
+# User Suspension Views
+
+@login_required
+@moderator_required
+def suspend_user(request):
+    user_id = request.GET.get('id')
+    flag_id = request.GET.get('flag')
+
+    user_to_suspend = get_object_or_404(User, id=user_id)
+    profile = user_to_suspend.profile
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '').strip()
+
+        if not reason:
+            messages.error(request, "Suspension reason is required.")
+            return redirect(f"{request.path}?id={user_id}" + (f"&flag={flag_id}" if flag_id else ""))
+
+        profile.is_suspended = True
+        profile.suspension_reason = reason
+        profile.suspended_at = timezone.now()
+        profile.suspended_by = request.user
+        profile.save()
+
+        if flag_id:
+            flag = Flag.objects.get(id=flag_id)
+            flag.status = Flag.ACTIONED
+            flag.reviewed_by = request.user
+            flag.reviewed_at = timezone.now()
+            flag.moderator_notes = f"User suspended: {reason}"
+            flag.save()
+
+        messages.success(request, f"User {user_to_suspend.username} has been suspended.")
+        return redirect('moderation_dashboard')
+
+    return render(request, 'user_dashboard/suspend_user.html', {
+        'user_to_suspend': user_to_suspend,
+        'profile': profile,
+        'flag_id': flag_id
+    })
+
+
+@login_required
+@moderator_required
+def reinstate_user(request):
+    user_id = request.GET.get('id')
+    user_to_reinstate = get_object_or_404(User, id=user_id)
+    profile = user_to_reinstate.profile
+
+    if request.method == 'POST':
+        profile.is_suspended = False
+        profile.reinstated_at = timezone.now()
+        profile.reinstated_by = request.user
+        profile.save()
+
+        messages.success(request, f"User {user_to_reinstate.username} has been reinstated.")
+        return redirect('suspended_users_list')
+
+    return render(request, 'user_dashboard/reinstate_user.html', {
+        'user_to_reinstate': user_to_reinstate,
+        'profile': profile
+    })
+
+
+def account_suspended(request):
+    if not request.user.is_authenticated or not hasattr(request.user, 'profile'):
+        return redirect('home')
+
+    profile = request.user.profile
+
+    if not profile.is_suspended:
+        return redirect('home')
+
+    return render(request, 'user_dashboard/account_suspended.html', {'profile': profile})
+
+
+@login_required
+@moderator_required
+def suspended_users_list(request):
+    suspended_profiles = Profile.objects.filter(is_suspended=True).select_related('user', 'suspended_by')
+
+    return render(request, 'user_dashboard/suspended_users_list.html', {
+        'suspended_profiles': suspended_profiles,
+        'total_suspended': suspended_profiles.count()
+    })

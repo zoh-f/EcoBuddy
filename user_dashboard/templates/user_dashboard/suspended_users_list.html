@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suspended Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff7e6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            background: #f1f5f9;
+            border-left: 4px solid #186ce2;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .stats p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        thead {
+            background-color: #f8f9fa;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: bold;
+            color: #333;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .reason-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-reinstate {
+            padding: 8px 16px;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            display: inline-block;
+        }
+
+        .btn-reinstate:hover {
+            background-color: #27ae60;
+        }
+
+        .no-users {
+            text-align: center;
+            padding: 40px 20px;
+            color: #757575;
+            font-size: 18px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #757575;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #616161;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Suspended Users</h1>
+
+        <div class="stats">
+            <p><strong>Currently suspended:</strong> {{ total_suspended }} user{{ total_suspended|pluralize }}</p>
+        </div>
+
+        {% if suspended_profiles %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Suspended By</th>
+                        <th>Suspended On</th>
+                        <th>Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in suspended_profiles %}
+                    <tr>
+                        <td>{{ profile.user.username }}</td>
+                        <td>{{ profile.user.email }}</td>
+                        <td>{{ profile.suspended_by.username }}</td>
+                        <td>{{ profile.suspended_at|date:"M j, Y, g:i a" }}</td>
+                        <td class="reason-cell" title="{{ profile.suspension_reason }}">
+                            {{ profile.suspension_reason|truncatewords:15 }}
+                        </td>
+                        <td>
+                            <a href="{% url 'reinstate_user' %}?id={{ profile.user.id }}" class="btn-reinstate">
+                                Reinstate
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-users">
+                No users are currently suspended.
+            </div>
+        {% endif %}
+
+        <a href="{% url 'moderation_dashboard' %}" class="back-link">Back to Moderation Dashboard</a>
+    </div>
+</body>
+</html>

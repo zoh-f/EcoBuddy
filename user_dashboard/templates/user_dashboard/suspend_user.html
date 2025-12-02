@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suspend User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff7e6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #d32f2f;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            background: #f1f5f9;
+            border-left: 4px solid #186ce2;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .user-info p {
+            margin: 5px 0;
+        }
+
+        .warning-box {
+            background: #ffebee;
+            border-left: 4px solid #d32f2f;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .warning-box p {
+            margin: 0;
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+            resize: vertical;
+            margin-bottom: 20px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #d32f2f;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        button[type="submit"] {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #b71c1c;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: #757575;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-cancel:hover {
+            background-color: #616161;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Suspend User Account</h1>
+
+        <div class="user-info">
+            <p><strong>Username:</strong> {{ user_to_suspend.username }}</p>
+            <p><strong>Email:</strong> {{ user_to_suspend.email }}</p>
+            <p><strong>Joined:</strong> {{ profile.joined_at|date:"M j, Y" }}</p>
+        </div>
+
+        <div class="warning-box">
+            <p>⚠️ This will permanently suspend the user's account. They will be unable to access most features until manually reinstated by a moderator.</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ user_to_suspend.id }}">
+            {% if flag_id %}
+                <input type="hidden" name="flag_id" value="{{ flag_id }}">
+            {% endif %}
+
+            <label for="reason">Suspension Reason (Required):</label>
+            <textarea
+                name="reason"
+                id="reason"
+                placeholder="Explain why this user is being suspended..."
+                required
+            ></textarea>
+
+            <div class="button-group">
+                <button type="submit">Confirm Suspension</button>
+                <a href="{% url 'moderation_dashboard' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

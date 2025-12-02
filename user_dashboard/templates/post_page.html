@@ -45,6 +45,9 @@
                     <img src="{{ p.photo.url }}" alt="photo">
                 {% endif %}
                 <small>Posted {{ p.created_at|date:"M j, Y, g:i a" }}</small>
+                <div style="margin-top: 10px;">
+                    <a href="{% url 'flag_content' %}?type=post&id={{ p.id }}" style="color: #ff6b6b; text-decoration: none; font-size: 14px;">🚩 Report</a>
+                </div>
             </div>
         {% endfor %}
     {% else %}

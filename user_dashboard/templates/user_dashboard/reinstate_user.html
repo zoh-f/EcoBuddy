@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reinstate User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff7e6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2ecc71;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            background: #f1f5f9;
+            border-left: 4px solid #186ce2;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .user-info p {
+            margin: 8px 0;
+        }
+
+        .suspension-details {
+            background: #ffebee;
+            border-left: 4px solid #d32f2f;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .suspension-details h3 {
+            margin-top: 0;
+            color: #d32f2f;
+        }
+
+        .suspension-details p {
+            margin: 8px 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        button[type="submit"] {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: #757575;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-cancel:hover {
+            background-color: #616161;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reinstate User Account</h1>
+
+        <div class="user-info">
+            <p><strong>Username:</strong> {{ user_to_reinstate.username }}</p>
+            <p><strong>Email:</strong> {{ user_to_reinstate.email }}</p>
+        </div>
+
+        <div class="suspension-details">
+            <h3>Current Suspension Details</h3>
+            <p><strong>Suspended by:</strong> {{ profile.suspended_by.username }}</p>
+            <p><strong>Suspended on:</strong> {{ profile.suspended_at|date:"M j, Y, g:i a" }}</p>
+            <p><strong>Reason:</strong> {{ profile.suspension_reason }}</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="button-group">
+                <button type="submit">Reinstate User</button>
+                <a href="{% url 'suspended_users_list' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

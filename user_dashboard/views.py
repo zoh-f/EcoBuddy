@@ -157,10 +157,6 @@ def delete_account(request):
         deleted_files = []  # Track what we delete (for logging)
         failed_files = []   # Track failures (for debugging)
 
-        # ═══════════════════════════════════════════════════════
-        # STEP 1: Connect to S3
-        # ═══════════════════════════════════════════════════════
-
         try:
             s3_client = boto3.client(
                 's3',
@@ -173,9 +169,6 @@ def delete_account(request):
             # Continue anyway - we'll still delete the account
             s3_client = None
 
-        # ═══════════════════════════════════════════════════════
-        # STEP 2: Delete Profile Picture from S3
-        # ═══════════════════════════════════════════════════════
 
         if s3_client and hasattr(user, 'profile'):
             profile = user.profile
@@ -199,10 +192,6 @@ def delete_account(request):
                 except Exception as e:
                     failed_files.append(f"Profile picture: {e}")
                     print(f"❌ Failed to delete profile picture: {e}")
-
-        # ═══════════════════════════════════════════════════════
-        # STEP 3: Delete All Post Photos from S3
-        # ═══════════════════════════════════════════════════════
 
         if s3_client:
             # Get all posts by this user
@@ -229,9 +218,6 @@ def delete_account(request):
                         failed_files.append(f"Post photo {post.id}: {e}")
                         print(f"❌ Failed to delete post photo: {e}")
 
-        # ═══════════════════════════════════════════════════════
-        # STEP 4: Remove User from All Chat Rooms
-        # ═══════════════════════════════════════════════════════
 
         from messaging.models import ChatRoom
 
@@ -246,10 +232,6 @@ def delete_account(request):
                 chat_room.delete()
                 print(f"✅ Deleted empty chat room: {chat_room.id}")
 
-        # ═══════════════════════════════════════════════════════
-        # STEP 5: Delete UserInfo Record
-        # ═══════════════════════════════════════════════════════
-
         try:
             user_info = UserInfo.objects.get(username=user.username)
             user_info.delete()
@@ -258,28 +240,14 @@ def delete_account(request):
             print(f"ℹ️  No UserInfo found for {user.username}")
             pass
 
-        # ═══════════════════════════════════════════════════════
-        # STEP 6: Log Out User (BEFORE deleting User object)
-        # ═══════════════════════════════════════════════════════
-
         username = user.username  # Save for logging
         logout(request)
 
-        # ═══════════════════════════════════════════════════════
-        # STEP 7: Delete User Account
-        # ═══════════════════════════════════════════════════════
-        # This CASCADE deletes:
-        #   - Profile (with profile_picture path)
-        #   - All Posts (with photo paths)
-        #   - All Messages sent by user
 
         user.delete()
         print(f"✅ Deleted user account: {username}")
 
-        # ═══════════════════════════════════════════════════════
-        # STEP 8: Summary Logging (Optional but Helpful)
-        # ═══════════════════════════════════════════════════════
-
+        # summary logging
         print("\n" + "="*50)
         print(f"Account Deletion Summary for {username}")
         print("="*50)
@@ -292,10 +260,6 @@ def delete_account(request):
             for failure in failed_files:
                 print(f"   - {failure}")
         print("="*50 + "\n")
-
-        # ═══════════════════════════════════════════════════════
-        # STEP 9: Redirect with Success Message
-        # ═══════════════════════════════════════════════════════
 
         messages.success(
             request,

@@ -116,9 +116,6 @@
         <li><strong>Bio:</strong> {{ userinfo.bio|default:"No bio yet" }}</li>
         <li><strong>Joined:</strong> {{ profile.joined_at|date:"F j, Y" }}</li>
       </ul>
-      <p style="margin-top:15px; font-size:14px; color:#666;">
-        Want to update your profile? Visit <a href="{% url 'account_settings' %}" style="color:#0070f3;">⚙️ Settings</a>
-      </p>
     </div>
 
     <!-- Links for navigation -->

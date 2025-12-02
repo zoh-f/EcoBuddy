@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderation Dashboard - EcoBuddy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #fff7e6;
+            color: #222;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f9f9f9;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            flex: 1;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        .flag-list {
+            margin-top: 30px;
+        }
+        .flag-item {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #ff6b6b;
+        }
+        .flag-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .flag-type {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .flag-reason {
+            background: #ffe0e0;
+            color: #c82333;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .flag-content {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .back-link {
+            color: #0070f3;
+            text-decoration: underline;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        .no-flags {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Moderation Dashboard</h1>
+        <p>Welcome, <strong>{{ request.user.username }}</strong> (Moderator)</p>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_pending }}</div>
+                <div>Pending Flags</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ total_reviewed_today }}</div>
+                <div>Reviewed Today</div>
+            </div>
+        </div>
+
+        <div class="flag-list">
+            <h2>Pending Flags</h2>
+
+            {% if pending_flags %}
+                {% for flag in pending_flags %}
+                <div class="flag-item">
+                    <div class="flag-header">
+                        <div>
+                            <span class="flag-type">{{ flag.get_content_type_display }}</span>
+                            <span class="flag-reason">{{ flag.get_reason_display }}</span>
+                        </div>
+                        <small>Reported {{ flag.created_at|timesince }} ago by {{ flag.reporter.username }}</small>
+                    </div>
+
+                    {% if flag.description %}
+                    <p><strong>Description:</strong> {{ flag.description }}</p>
+                    {% endif %}
+
+                    {% if flag.content_obj %}
+                    <div class="flag-content">
+                        <strong>Content:</strong>
+                        {% if flag.content_type == 'post' %}
+                            <p><strong>Title:</strong> {{ flag.content_obj.title }}</p>
+                            <p>{{ flag.content_obj.content|truncatewords:50 }}</p>
+                            <small>By {{ flag.content_obj.user.username }}</small>
+                        {% elif flag.content_type == 'message' %}
+                            <p>{{ flag.content_obj.content|truncatewords:30 }}</p>
+                            <small>By {{ flag.content_obj.sender.username }}</small>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p><em>Content no longer available</em></p>
+                    {% endif %}
+
+                    <div class="btn-group">
+                        {% if flag.content_type == 'post' %}
+                        <a href="{% url 'remove_post' %}?id={{ flag.content_id }}&flag={{ flag.id }}" class="btn btn-danger">Remove Post</a>
+                        {% elif flag.content_type == 'message' %}
+                        <a href="{% url 'remove_message' %}?id={{ flag.content_id }}&flag={{ flag.id }}" class="btn btn-danger">Remove Message</a>
+                        {% endif %}
+                        <a href="{% url 'dismiss_flag' %}?id={{ flag.id }}" class="btn btn-secondary">Dismiss Flag</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-flags">
+                    <p>✅ No pending flags! All clear.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <a href="{% url 'home' %}" class="back-link">← Back to Dashboard</a>
+    </div>
+</body>
+</html>

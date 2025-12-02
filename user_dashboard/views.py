@@ -1,14 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from .forms import PostForm, ProfileImageForm
-from .models import Post, Profile
+from .models import Post, Profile, Flag
 from user_info.models import UserInfo
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.contrib import messages
 from django.conf import settings
+from django.utils import timezone
+from .decorators import moderator_required
 import boto3
 
 # Create your views here.
@@ -269,3 +271,145 @@ def delete_account(request):
         )
 
         return redirect('/')
+
+
+# Moderation Views
+
+@login_required
+def flag_content(request):
+    """Allow users to flag inappropriate content using query params"""
+    content_type = request.GET.get('type')
+    content_id = request.GET.get('id')
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason')
+        description = request.POST.get('description', '')
+
+        Flag.objects.create(
+            reporter=request.user,
+            content_type=content_type,
+            content_id=content_id,
+            reason=reason,
+            description=description,
+            status=Flag.PENDING
+        )
+
+        messages.success(request, "Thank you for reporting. Our moderators will review this content.")
+        return redirect('home')
+
+    return render(request, 'user_dashboard/flag_form.html', {
+        'content_type': content_type,
+        'content_id': content_id
+    })
+
+
+@login_required
+@moderator_required
+def moderation_dashboard(request):
+    """Main moderator dashboard"""
+    pending_flags = Flag.objects.filter(status=Flag.PENDING).select_related('reporter').order_by('-created_at')
+    recent_reviews = Flag.objects.exclude(status=Flag.PENDING).select_related('reporter', 'reviewed_by').order_by('-reviewed_at')[:10]
+
+    total_pending = pending_flags.count()
+    total_reviewed_today = Flag.objects.filter(reviewed_at__date=timezone.now().date()).count()
+
+    for flag in pending_flags:
+        flag.content_obj = flag.get_content_object()
+        flag.flagged_user = flag.get_flagged_user()
+
+    context = {
+        'pending_flags': pending_flags,
+        'recent_reviews': recent_reviews,
+        'total_pending': total_pending,
+        'total_reviewed_today': total_reviewed_today,
+    }
+
+    return render(request, 'user_dashboard/moderation_dashboard.html', context)
+
+
+@login_required
+@moderator_required
+def remove_post(request):
+    """Remove a post - uses query params"""
+    post_id = request.GET.get('id')
+    flag_id = request.GET.get('flag')
+
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason', 'Violates community standards')
+
+        post.is_removed = True
+        post.removed_by = request.user
+        post.removed_at = timezone.now()
+        post.removal_reason = reason
+        post.save()
+
+        if flag_id:
+            flag = Flag.objects.get(id=flag_id)
+            flag.status = Flag.ACTIONED
+            flag.reviewed_by = request.user
+            flag.reviewed_at = timezone.now()
+            flag.moderator_notes = f"Post removed: {reason}"
+            flag.save()
+
+        messages.success(request, f"Post by {post.user.username} has been removed.")
+        return redirect('moderation_dashboard')
+
+    return render(request, 'user_dashboard/confirm_removal.html', {'post': post, 'flag_id': flag_id})
+
+
+@login_required
+@moderator_required
+def remove_message(request):
+    """Remove a message - uses query params"""
+    from messaging.models import Message
+
+    message_id = request.GET.get('id')
+    flag_id = request.GET.get('flag')
+
+    message = get_object_or_404(Message, id=message_id)
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason', 'Violates community standards')
+
+        message.is_removed = True
+        message.removed_by = request.user
+        message.removed_at = timezone.now()
+        message.removal_reason = reason
+        message.save()
+
+        if flag_id:
+            flag = Flag.objects.get(id=flag_id)
+            flag.status = Flag.ACTIONED
+            flag.reviewed_by = request.user
+            flag.reviewed_at = timezone.now()
+            flag.moderator_notes = f"Message removed: {reason}"
+            flag.save()
+
+        messages.success(request, f"Message by {message.sender.username} has been removed.")
+        return redirect('moderation_dashboard')
+
+    return render(request, 'user_dashboard/confirm_removal.html', {'message': message, 'flag_id': flag_id})
+
+
+@login_required
+@moderator_required
+def dismiss_flag(request):
+    """Dismiss a flag - uses query params"""
+    flag_id = request.GET.get('id')
+    flag = get_object_or_404(Flag, id=flag_id)
+
+    if request.method == 'POST':
+        notes = request.POST.get('notes', 'No violation found')
+
+        flag.status = Flag.DISMISSED
+        flag.reviewed_by = request.user
+        flag.reviewed_at = timezone.now()
+        flag.moderator_notes = notes
+        flag.save()
+
+        messages.success(request, "Flag dismissed.")
+        return redirect('moderation_dashboard')
+
+    return render(request, 'user_dashboard/dismiss_flag.html', {'flag': flag})

@@ -16,6 +16,13 @@ urlpatterns = [
     # Account deletion routes
     path("settings/", views.account_settings, name="account_settings"),
     path("delete-account/", views.delete_account, name="delete_account"),
+
+    # Moderation routes - using simple paths with query params
+    path("moderation/", views.moderation_dashboard, name="moderation_dashboard"),
+    path("moderation/flag/", views.flag_content, name="flag_content"),
+    path("moderation/remove-post/", views.remove_post, name="remove_post"),
+    path("moderation/remove-message/", views.remove_message, name="remove_message"),
+    path("moderation/dismiss/", views.dismiss_flag, name="dismiss_flag"),
 ]
 
 if settings.DEBUG:

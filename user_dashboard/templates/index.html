@@ -126,6 +126,11 @@
       <a href="{% url 'account_settings' %}" class="link">⚙️ Settings</a>
     </p>
 
+    {% if profile and profile.can_moderate %}
+    <p style="font-size:18px; color:#ff6b6b;">🛡️ You have moderator privileges.</p>
+    <a href="{% url 'moderation_dashboard' %}" class="link">Go to Moderation Dashboard</a>
+    {% endif %}
+
     {% if user.is_staff %}
     <p style="font-size:18px;">You have admin privileges.</p>
     <a href="{% url 'admin_page' %}" class="link">Go to Admin Page</a>

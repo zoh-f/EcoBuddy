@@ -131,7 +131,7 @@
     <a href="{% url 'moderation_dashboard' %}" class="link">Go to Moderation Dashboard</a>
     {% endif %}
 
-    {% if user.is_staff %}
+    {% if profile and profile.role == 'admin' %}
     <p style="font-size:18px;">You have admin privileges.</p>
     <a href="{% url 'admin_page' %}" class="link">Go to Admin Page</a>
     {% endif %}

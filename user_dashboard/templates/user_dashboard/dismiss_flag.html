@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dismiss Flag - EcoBuddy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #fff7e6;
+            color: #222;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #f9f9f9;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #0c5460;
+        }
+        .flag-details {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            box-sizing: border-box;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            margin-left: 10px;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dismiss Flag</h1>
+
+        <div class="info-box">
+            <strong>Note:</strong> Dismissing this flag means no action will be taken. The content will remain visible.
+        </div>
+
+        <div class="flag-details">
+            <h3>Flag Details</h3>
+            <p><strong>Reported by:</strong> {{ flag.reporter.username }}</p>
+            <p><strong>Content Type:</strong> {{ flag.get_content_type_display }}</p>
+            <p><strong>Reason:</strong> {{ flag.get_reason_display }}</p>
+            {% if flag.description %}
+            <p><strong>Description:</strong> {{ flag.description }}</p>
+            {% endif %}
+            <p><strong>Reported:</strong> {{ flag.created_at|date:"F j, Y g:i A" }}</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="notes">Moderator Notes (optional):</label>
+                <textarea id="notes" name="notes" placeholder="Explain why this flag is being dismissed...">No violation found</textarea>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">Dismiss Flag</button>
+                <a href="{% url 'moderation_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

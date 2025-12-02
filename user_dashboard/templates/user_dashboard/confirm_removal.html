@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Removal - EcoBuddy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #fff7e6;
+            color: #222;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #f9f9f9;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .content-preview {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            box-sizing: border-box;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-left: 10px;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚠️ Confirm Content Removal</h1>
+
+        <div class="warning-box">
+            <strong>Warning:</strong> This action will remove the content and mark it as violating community standards.
+        </div>
+
+        {% if post %}
+        <div class="content-preview">
+            <h3>Post Details</h3>
+            <p><strong>Title:</strong> {{ post.title }}</p>
+            <p><strong>Content:</strong> {{ post.content|truncatewords:100 }}</p>
+            <p><strong>Author:</strong> {{ post.user.username }}</p>
+            <p><strong>Created:</strong> {{ post.created_at|date:"F j, Y g:i A" }}</p>
+        </div>
+        {% elif message %}
+        <div class="content-preview">
+            <h3>Message Details</h3>
+            <p><strong>Content:</strong> {{ message.content|truncatewords:50 }}</p>
+            <p><strong>Sender:</strong> {{ message.sender.username }}</p>
+            <p><strong>Sent:</strong> {{ message.timestamp|date:"F j, Y g:i A" }}</p>
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="reason">Removal Reason:</label>
+                <textarea id="reason" name="reason" placeholder="Explain why this content is being removed..." required>Violates community standards</textarea>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-danger">Confirm Removal</button>
+                <a href="{% url 'moderation_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -14,16 +14,17 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         profile, _ = Profile.objects.get_or_create(user=instance)
 
-    
-@receiver(post_save, sender=User)
-def make_google_admin(sender, instance, created, **kwargs):
-    if created and instance.email in ADMIN_EMAIL:
-        instance.is_staff = True
-        instance.is_superuser = True
-        User.objects.filter(pk=instance.pk).update(
-            is_staff=True,
-            is_superuser=True
-        )
+    # Check if user should be promoted to admin (works for both new and existing users)
+    if instance.email in ADMIN_EMAIL:
+        # Update User model permissions
+        if not instance.is_staff or not instance.is_superuser:
+            User.objects.filter(pk=instance.pk).update(
+                is_staff=True,
+                is_superuser=True
+            )
+
+        # Update Profile role
         profile, _ = Profile.objects.get_or_create(user=instance)
-        profile.role = Profile.ADMIN
-        profile.save()
+        if profile.role != Profile.ADMIN:
+            profile.role = Profile.ADMIN
+            profile.save()

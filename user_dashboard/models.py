@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from uuid import uuid4
 from pathlib import Path
 
@@ -38,11 +36,6 @@ class Profile(models.Model):
     def can_moderate(self):
         """Alias for is_moderator_or_admin for clarity"""
         return self.is_moderator_or_admin()
-    
-    @receiver(post_save, sender=User)
-    def create_user_profile(sender, instance, created, **kwargs):
-        if created:
-            Profile.objects.create(user=instance)
 
 def post_photo_path(instance, filename):
     ext = filename.split('.')[-1]

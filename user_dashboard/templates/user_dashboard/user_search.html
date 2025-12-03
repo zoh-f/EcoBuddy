@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Users - EcoBuddy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff7e6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c5f2d;
+            margin-bottom: 20px;
+        }
+
+        .nav-links {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-links a {
+            color: #2c5f2d;
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .search-box {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-form input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #4caf50;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .search-form button {
+            padding: 12px 30px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .search-form button:hover {
+            background-color: #45a049;
+        }
+
+        .results-section {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c5f2d;
+            text-decoration: none;
+        }
+
+        .user-name:hover {
+            text-decoration: underline;
+        }
+
+        .user-username {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .btn-success {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #45a049;
+        }
+
+        .btn-secondary {
+            background-color: #757575;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #616161;
+        }
+
+        .btn-info {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #0b7dda;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .status-friends {
+            background: #e8f5e9;
+            color: #2c5f2d;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Find Users</h1>
+
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'public_feed' %}">Feed</a>
+            <a href="{% url 'friends_list' %}">Friends</a>
+        </div>
+
+        <div class="search-box">
+            <form method="get" action="{% url 'user_search' %}" class="search-form">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search by username..." required>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        {% if query %}
+        <div class="results-section">
+            <h2>Search Results for "{{ query }}"</h2>
+
+            {% if results %}
+                {% for result in results %}
+                <div class="user-item">
+                    <div class="user-info">
+                        <a href="{% url 'user_profile' result.user.username %}" class="user-name">{{ result.display_name }}</a>
+                        <div class="user-username">@{{ result.user.username }}</div>
+                    </div>
+                    <div>
+                        {% if result.is_friend %}
+                            <span class="status-badge status-friends">Friends</span>
+                            <a href="{% url 'user_profile' result.user.username %}" class="btn btn-secondary">View Profile</a>
+                        {% elif result.pending_sent %}
+                            <span class="status-badge status-pending">Request Sent</span>
+                        {% elif result.pending_received %}
+                            <span class="status-badge status-pending">Sent You a Request</span>
+                            <a href="{% url 'friends_list' %}" class="btn btn-info">View Request</a>
+                        {% else %}
+                            <a href="{% url 'send_friend_request' %}?username={{ result.user.username }}" class="btn btn-success">Add Friend</a>
+                            <a href="{% url 'user_profile' result.user.username %}" class="btn btn-secondary">View Profile</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No users found matching "{{ query }}"</p>
+                </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="results-section">
+            <div class="empty-state">
+                <p>Search for users by their username to connect with them!</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

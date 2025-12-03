@@ -508,3 +508,327 @@ def suspended_users_list(request):
         'suspended_profiles': suspended_profiles,
         'total_suspended': suspended_profiles.count()
     })
+    
+    # ============= PUBLIC FEED =============
+
+@login_required
+def public_feed(request):
+    """
+    Show PUBLIC posts + friends' PRIVATE posts
+    Filter by: topic, hashtag, date, text search
+    """
+    from django.db.models import Q
+    from datetime import timedelta
+
+    # Get friend IDs
+    friend_ids = Friendship.get_friends(request.user).values_list('id', flat=True)
+
+    # Base query: not draft, not removed
+    base = Q(is_draft=False, is_removed=False)
+
+    # Visibility: PUBLIC or (PRIVATE and from friend)
+    visibility = Q(privacy=Post.PUBLIC) | Q(privacy=Post.PRIVATE, user_id__in=friend_ids)
+
+    posts = Post.objects.filter(base & visibility)
+
+    # FILTERS
+    # 1. Topic
+    topic = request.GET.get('topic')
+    if topic and topic != 'all':
+        posts = posts.filter(topic=topic)
+
+    # 2. Hashtag
+    hashtag = request.GET.get('hashtag', '').strip().lower().lstrip('#')
+    if hashtag:
+        posts = posts.filter(hashtags__icontains=hashtag)
+
+    # 3. Temporal (past X days)
+    days = request.GET.get('days')
+    if days:
+        try:
+            cutoff = timezone.now() - timedelta(days=int(days))
+            posts = posts.filter(created_at__gte=cutoff)
+        except ValueError:
+            pass
+
+    # 4. Text search
+    search = request.GET.get('search', '').strip()
+    if search:
+        posts = posts.filter(Q(content__icontains=search) | Q(title__icontains=search))
+
+    # Optimize queries
+    posts = posts.select_related('user', 'user__profile').order_by('-created_at')
+
+    # Add display names
+    for post in posts:
+        try:
+            userinfo = UserInfo.objects.get(username=post.user.username)
+            post.author_display_name = userinfo.display_name or post.user.username
+        except UserInfo.DoesNotExist:
+            post.author_display_name = post.user.username
+
+    context = {
+        'posts': posts,
+        'topic_choices': Post.TOPIC_CHOICES,
+        'current_topic': topic or 'all',
+        'current_hashtag': hashtag,
+        'current_days': days,
+        'current_search': search,
+    }
+
+    return render(request, 'user_dashboard/feed.html', context)
+
+
+# ============= FRIEND SYSTEM =============
+
+@login_required
+def send_friend_request(request):
+    """Send friend request - ?username=..."""
+    username = request.GET.get('username')
+    to_user = get_object_or_404(User, username=username)
+
+    if to_user == request.user:
+        messages.error(request, "Cannot send request to yourself.")
+        return redirect('user_profile', username=username)
+
+    if Friendship.are_friends(request.user, to_user):
+        messages.info(request, f"Already friends with {to_user.username}.")
+        return redirect('user_profile', username=username)
+
+    # Check existing/reverse requests
+    existing = FriendRequest.objects.filter(
+        from_user=request.user, to_user=to_user, status='pending'
+    ).first()
+
+    if existing:
+        messages.info(request, "Friend request already sent.")
+        return redirect('user_profile', username=username)
+
+    reverse = FriendRequest.objects.filter(
+        from_user=to_user, to_user=request.user, status='pending'
+    ).first()
+
+    if reverse:
+        messages.info(request, f"{to_user.username} already sent you a request!")
+        return redirect('friends_list')
+
+    FriendRequest.objects.create(from_user=request.user, to_user=to_user)
+    messages.success(request, f"Friend request sent to {to_user.username}!")
+    return redirect('user_profile', username=username)
+
+
+@login_required
+def accept_friend_request(request):
+    """Accept request - ?id=..."""
+    request_id = request.GET.get('id')
+    friend_request = get_object_or_404(FriendRequest, id=request_id, to_user=request.user)
+
+    if friend_request.status != 'pending':
+        messages.error(request, "Request already processed.")
+        return redirect('friends_list')
+
+    friend_request.status = 'accepted'
+    friend_request.responded_at = timezone.now()
+    friend_request.save()
+
+    Friendship.create_friendship(request.user, friend_request.from_user)
+
+    messages.success(request, f"Now friends with {friend_request.from_user.username}!")
+    return redirect('friends_list')
+
+
+@login_required
+def reject_friend_request(request):
+    """Reject request - ?id=..."""
+    request_id = request.GET.get('id')
+    friend_request = get_object_or_404(FriendRequest, id=request_id, to_user=request.user)
+
+    if friend_request.status != 'pending':
+        messages.error(request, "Request already processed.")
+        return redirect('friends_list')
+
+    friend_request.status = 'rejected'
+    friend_request.responded_at = timezone.now()
+    friend_request.save()
+
+    messages.success(request, "Friend request rejected.")
+    return redirect('friends_list')
+
+
+@login_required
+def unfriend(request):
+    """Remove friendship - ?username=... with POST confirmation"""
+    username = request.GET.get('username')
+    friend = get_object_or_404(User, username=username)
+
+    if request.method == 'POST':
+        Friendship.remove_friendship(request.user, friend)
+        messages.success(request, f"No longer friends with {friend.username}.")
+        return redirect('friends_list')
+
+    return render(request, 'user_dashboard/confirm_unfriend.html', {'friend': friend})
+
+
+@login_required
+def friends_list(request):
+    """Show friends and pending requests"""
+    friends = Friendship.get_friends(request.user)
+
+    # Add display names
+    friends_with_info = []
+    for friend in friends:
+        try:
+            userinfo = UserInfo.objects.get(username=friend.username)
+            display_name = userinfo.display_name or friend.username
+        except UserInfo.DoesNotExist:
+            display_name = friend.username
+        friends_with_info.append({'user': friend, 'display_name': display_name})
+
+    # Pending requests received
+    pending_requests = FriendRequest.objects.filter(
+        to_user=request.user, status='pending'
+    ).select_related('from_user')
+
+    for req in pending_requests:
+        try:
+            userinfo = UserInfo.objects.get(username=req.from_user.username)
+            req.display_name = userinfo.display_name or req.from_user.username
+        except UserInfo.DoesNotExist:
+            req.display_name = req.from_user.username
+
+    # Sent requests
+    sent_requests = FriendRequest.objects.filter(
+        from_user=request.user, status='pending'
+    ).select_related('to_user')
+
+    for req in sent_requests:
+        try:
+            userinfo = UserInfo.objects.get(username=req.to_user.username)
+            req.display_name = userinfo.display_name or req.to_user.username
+        except UserInfo.DoesNotExist:
+            req.display_name = req.to_user.username
+
+    context = {
+        'friends': friends_with_info,
+        'pending_requests': pending_requests,
+        'sent_requests': sent_requests,
+    }
+    return render(request, 'user_dashboard/friends_list.html', context)
+
+
+# ============= USER PROFILES =============
+
+@login_required
+def user_profile(request, username):
+    """Public user profile with posts and friend status"""
+    profile_user = get_object_or_404(User, username=username)
+
+    try:
+        userinfo = UserInfo.objects.get(username=username)
+    except UserInfo.DoesNotExist:
+        userinfo = None
+
+    try:
+        profile = Profile.objects.get(user=profile_user)
+    except Profile.DoesNotExist:
+        profile = None
+
+    is_own_profile = (profile_user == request.user)
+    is_friend = Friendship.are_friends(request.user, profile_user)
+
+    pending_request_sent = FriendRequest.objects.filter(
+        from_user=request.user, to_user=profile_user, status='pending'
+    ).exists()
+
+    pending_request_received = FriendRequest.objects.filter(
+        from_user=profile_user, to_user=request.user, status='pending'
+    ).exists()
+
+    # Posts visibility
+    if is_own_profile:
+        posts = Post.objects.filter(user=profile_user, is_draft=False, is_removed=False)
+    elif is_friend:
+        posts = Post.objects.filter(user=profile_user, is_draft=False, is_removed=False)
+    else:
+        posts = Post.objects.filter(user=profile_user, privacy=Post.PUBLIC, is_draft=False, is_removed=False)
+
+    posts = posts.order_by('-created_at')
+
+    context = {
+        'profile_user': profile_user,
+        'userinfo': userinfo,
+        'profile': profile,
+        'posts': posts,
+        'is_own_profile': is_own_profile,
+        'is_friend': is_friend,
+        'pending_request_sent': pending_request_sent,
+        'pending_request_received': pending_request_received,
+    }
+    return render(request, 'user_dashboard/user_profile.html', context)
+
+
+@login_required
+def user_search(request):
+    """Search for users by username or display name"""
+    query = request.GET.get('q', '').strip()
+
+    results = []
+    if query:
+        # Search in User.username
+        user_results = User.objects.filter(username__icontains=query).exclude(id=request.user.id)[:20]
+
+        for user in user_results:
+            try:
+                userinfo = UserInfo.objects.get(username=user.username)
+                display_name = userinfo.display_name or user.username
+            except UserInfo.DoesNotExist:
+                display_name = user.username
+
+            # Check friendship status
+            is_friend = Friendship.are_friends(request.user, user)
+
+            # Check pending request
+            pending_sent = FriendRequest.objects.filter(
+                from_user=request.user, to_user=user, status='pending'
+            ).exists()
+
+            pending_received = FriendRequest.objects.filter(
+                from_user=user, to_user=request.user, status='pending'
+            ).exists()
+
+            results.append({
+                'user': user,
+                'display_name': display_name,
+                'is_friend': is_friend,
+                'pending_sent': pending_sent,
+                'pending_received': pending_received,
+            })
+
+    return render(request, 'user_dashboard/user_search.html', {
+        'results': results,
+        'query': query
+    })
+
+
+# ============= DRAFTS SYSTEM =============
+
+@login_required
+def drafts_page(request):
+    """Show user's draft posts"""
+    drafts = Post.objects.filter(user=request.user, is_draft=True).order_by('-created_at')
+    return render(request, 'user_dashboard/drafts.html', {'drafts': drafts})
+
+
+@login_required
+def publish_draft(request):
+    """Publish draft - ?id=... with POST confirmation"""
+    post_id = request.GET.get('id')
+    post = get_object_or_404(Post, id=post_id, user=request.user, is_draft=True)
+
+    if request.method == 'POST':
+        post.is_draft = False
+        post.save()
+        messages.success(request, "Post published!")
+        return redirect('post_page')
+
+    return render(request, 'user_dashboard/confirm_publish.html', {'post': post})

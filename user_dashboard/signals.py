@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from .models import Profile
 
-ADMIN_EMAIL = ["swe.project.b15@gmail.com",]
+ADMIN_EMAIL = ["swe.project.b15@gmail.com", "admin@gmail.com"]
 
 User = get_user_model()
 

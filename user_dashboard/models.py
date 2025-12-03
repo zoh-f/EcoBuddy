@@ -63,11 +63,57 @@ def post_photo_path(instance, filename):
     return Path('posts') / filename
 
 class Post(models.Model):
+    # Topic choices for sustainability posts
+    TOPIC_CHOICES = [
+        ('recycling', '♻️ Recycling & Waste'),
+        ('living', '🌱 Sustainable Living'),
+        ('campus', '🍃 Campus Sustainability'),
+        ('food', '🥗 Food & Dining'),
+        ('transport', '🚴 Transportation'),
+        ('education', '💡 Tips & Education'),
+        ('achievements', '🏆 Achievements'),
+        ('discussion', '💬 General Discussion'),
+    ]
+
+    # Privacy choices
+    PUBLIC = 'public'
+    PRIVATE = 'private'
+    PRIVACY_CHOICES = [
+        (PUBLIC, 'Public'),
+        (PRIVATE, 'Friends Only'),
+    ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=200, default="Sustainability Post")
     content = models.TextField()
     photo = models.ImageField(upload_to=post_photo_path, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Social feed fields
+    topic = models.CharField(
+        max_length=20,
+        choices=TOPIC_CHOICES,
+        default='discussion',
+        help_text="Sustainability topic category"
+    )
+    privacy = models.CharField(
+        max_length=10,
+        choices=PRIVACY_CHOICES,
+        default=PUBLIC,
+        help_text="Who can see this post"
+    )
+    hashtags = models.TextField(
+        blank=True,
+        help_text="Comma-separated hashtags (e.g., zerowaste, climateaction)"
+    )
+    is_draft = models.BooleanField(
+        default=False,
+        help_text="Draft posts are not shown in feed"
+    )
+    comments_count = models.IntegerField(
+        default=0,
+        help_text="Reserved for future Comment feature"
+    )
 
     # Moderation fields
     is_removed = models.BooleanField(default=False, help_text="Whether this post has been removed by a moderator")
@@ -84,9 +130,24 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['privacy', 'is_draft', '-created_at']),
+            models.Index(fields=['topic', '-created_at']),
+            models.Index(fields=['user', 'is_draft']),
+        ]
 
     def __str__(self):
         return f"Post by {self.user.username} at {self.created_at}"
+
+    def get_hashtags_list(self):
+        """Parse hashtags from comma-separated string"""
+        if not self.hashtags:
+            return []
+        return [tag.strip().lower() for tag in self.hashtags.split(',') if tag.strip()]
+
+    def get_hashtags_display(self):
+        """Return hashtags formatted for display (with # prefix)"""
+        return [f"#{tag}" for tag in self.get_hashtags_list()]
 
 
 class Flag(models.Model):
@@ -222,3 +283,108 @@ class Flag(models.Model):
             elif hasattr(content, 'sender'):
                 return content.sender
         return None
+
+
+class Friendship(models.Model):
+    """Bidirectional friendship between users"""
+    user1 = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='friendships_as_user1'
+    )
+    user2 = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='friendships_as_user2'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user1', 'user2'], name='unique_friendship'),
+            models.CheckConstraint(
+                condition=models.Q(user1__lt=models.F('user2')),
+                name='user1_less_than_user2'
+            )
+        ]
+        indexes = [
+            models.Index(fields=['user1', 'user2']),
+        ]
+
+    def __str__(self):
+        return f"{self.user1.username} <-> {self.user2.username}"
+
+    @classmethod
+    def are_friends(cls, user_a, user_b):
+        """Check if two users are friends"""
+        if user_a.id == user_b.id:
+            return False
+        u1, u2 = (user_a, user_b) if user_a.id < user_b.id else (user_b, user_a)
+        return cls.objects.filter(user1=u1, user2=u2).exists()
+
+    @classmethod
+    def get_friends(cls, user):
+        """Get all friends of a user"""
+        from django.db.models import Q
+        friendships = cls.objects.filter(Q(user1=user) | Q(user2=user))
+        friend_ids = []
+        for f in friendships:
+            friend_ids.append(f.user2.id if f.user1 == user else f.user1.id)
+        return User.objects.filter(id__in=friend_ids)
+
+    @classmethod
+    def create_friendship(cls, user_a, user_b):
+        """Create friendship (normalizes order)"""
+        if user_a.id == user_b.id:
+            return None
+        u1, u2 = (user_a, user_b) if user_a.id < user_b.id else (user_b, user_a)
+        friendship, created = cls.objects.get_or_create(user1=u1, user2=u2)
+        return friendship
+
+    @classmethod
+    def remove_friendship(cls, user_a, user_b):
+        """Remove friendship"""
+        if user_a.id == user_b.id:
+            return
+        u1, u2 = (user_a, user_b) if user_a.id < user_b.id else (user_b, user_a)
+        cls.objects.filter(user1=u1, user2=u2).delete()
+
+
+class FriendRequest(models.Model):
+    """Friend request from one user to another"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    from_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='friend_requests_sent'
+    )
+    to_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='friend_requests_received'
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['from_user', 'to_user'],
+                condition=models.Q(status='pending'),
+                name='unique_pending_request'
+            )
+        ]
+        indexes = [
+            models.Index(fields=['to_user', 'status']),
+            models.Index(fields=['from_user', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.from_user.username} → {self.to_user.username} ({self.status})"

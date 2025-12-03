@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from .forms import PostForm, ProfileImageForm
-from .models import Post, Profile, Flag
+from .models import Post, Profile, Flag, Friendship, FriendRequest
 from user_info.models import UserInfo
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -82,7 +82,13 @@ def create_post(request):
             post = form.save(commit=False)
             post.user = request.user
             post.save()
-            return redirect('post_page')
+
+            if post.is_draft:
+                messages.success(request, "Post saved as draft!")
+                return redirect('drafts_page')
+            else:
+                messages.success(request, "Post published!")
+                return redirect('post_page')
     else:
         form = PostForm()
     return render(request, 'create_post.html', {'form': form})

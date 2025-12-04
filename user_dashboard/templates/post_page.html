@@ -31,7 +31,9 @@
 <body>
     <div class="topbar">
         <a href="{% url 'home' %}" class="btn">Back to Home</a>
+        <a href="{% url 'public_feed' %}" class="btn" style="margin-left:10px;">Feed</a>
         <a href="{% url 'create_post' %}" class="btn" style="margin-left:10px;">+ Create Post</a>
+        <a href="{% url 'drafts_page' %}" class="btn" style="margin-left:10px;">My Drafts</a>
     </div>
 
     <h2>My Posts</h2>
@@ -39,15 +41,35 @@
     {% if posts %}
         {% for p in posts %}
             <div class="post">
+                <div style="margin-bottom: 10px;">
+                    <span style="background: #e8f5e9; color: #2c5f2d; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+                        {% for choice in p.TOPIC_CHOICES %}
+                            {% if choice.0 == p.topic %}{{ choice.1 }}{% endif %}
+                        {% endfor %}
+                    </span>
+                    {% if p.privacy == 'private' %}
+                    <span style="color: #ff6b6b; font-size: 12px; margin-left: 10px;">🔒 Friends Only</span>
+                    {% else %}
+                    <span style="color: #4caf50; font-size: 12px; margin-left: 10px;">🌍 Public</span>
+                    {% endif %}
+                    {% if p.is_draft %}
+                    <span style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 12px; margin-left: 10px;">📝 DRAFT</span>
+                    {% endif %}
+                </div>
                 <h3>{{ p.title }}</h3>
                 <p>{{ p.content }}</p>
                 {% if p.photo %}
                     <img src="{{ p.photo.url }}" alt="photo">
                 {% endif %}
-                <small>Posted {{ p.created_at|date:"M j, Y, g:i a" }}</small>
+                {% if p.hashtags %}
                 <div style="margin-top: 10px;">
-                    <a href="{% url 'flag_content' %}?type=post&id={{ p.id }}" style="color: #ff6b6b; text-decoration: none; font-size: 14px;">🚩 Report</a>
+                    <strong style="font-size: 14px;">Hashtags:</strong>
+                    {% for hashtag in p.get_hashtags_display %}
+                    <span style="color: #4caf50; margin-right: 8px;">{{ hashtag }}</span>
+                    {% endfor %}
                 </div>
+                {% endif %}
+                <small>Posted {{ p.created_at|date:"M j, Y, g:i a" }}</small>
             </div>
         {% endfor %}
     {% else %}

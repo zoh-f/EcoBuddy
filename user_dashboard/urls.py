@@ -29,6 +29,24 @@ urlpatterns = [
     path("moderation/reinstate/", views.reinstate_user, name="reinstate_user"),
     path("moderation/suspended-users/", views.suspended_users_list, name="suspended_users_list"),
     path("account-suspended/", views.account_suspended, name="account_suspended"),
+
+    # Social Feed routes
+    path("feed/", views.public_feed, name="public_feed"),
+
+    # User profile routes
+    path("profile/<str:username>/", views.user_profile, name="user_profile"),
+    path("search/", views.user_search, name="user_search"),
+
+    # Friend system routes
+    path("friends/", views.friends_list, name="friends_list"),
+    path("friends/send/", views.send_friend_request, name="send_friend_request"),
+    path("friends/accept/", views.accept_friend_request, name="accept_friend_request"),
+    path("friends/reject/", views.reject_friend_request, name="reject_friend_request"),
+    path("friends/unfriend/", views.unfriend, name="unfriend"),
+
+    # Drafts routes
+    path("drafts/", views.drafts_page, name="drafts_page"),
+    path("drafts/publish/", views.publish_draft, name="publish_draft"),
 ]
 
 if settings.DEBUG:

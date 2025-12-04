@@ -231,6 +231,7 @@
           if (data.id <= LAST_RENDERED_ID) return;
           LAST_RENDERED_ID = data.id;
           appendMessage(data.sender, data.content, data.sender === CURRENT_USER);
+          
         };
       } else {
         console.warn("Your browser doesn't support EventSource.");

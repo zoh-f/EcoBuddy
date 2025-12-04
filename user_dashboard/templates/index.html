@@ -67,6 +67,24 @@
       color: #0070f3;
       text-decoration: underline;
     }
+
+    .message.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .message.info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
   </style>
 </head>
 
@@ -74,6 +92,15 @@
   <h1 style="text-align:center; font-size:42px; font-weight:600;">EcoBuddy</h1>
 
   {% if user.is_authenticated %}
+  {% if messages %}
+  <div style="max-width: 800px; margin: 20px auto;">
+    {% for message in messages %}
+    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
   {% if profile %}
   <div class="container">
     <h2 style="font-size:28px; font-weight:600;">Your Profile</h2>
@@ -120,10 +147,14 @@
 
     <!-- Links for navigation -->
     <p style="margin-top:20px;">
-      <a href="{% url 'account_logout' %}" class="link">Logout</a> |
+      <a href="{% url 'public_feed' %}" class="link">Feed</a> |
+      <a href="{% url 'friends_list' %}" class="link">Friends</a> |
+      <a href="{% url 'user_search' %}" class="link">Find Users</a> |
+      <a href="{% url 'user_profile' user.username %}" class="link">My Profile</a> |
       <a href="{% url 'post_page' %}" class="link">My Posts</a> |
       <a href="{% url 'messaging:lobby' %}" class="link">Messaging</a> |
-      <a href="{% url 'account_settings' %}" class="link">⚙️ Settings</a>
+      <a href="{% url 'account_settings' %}" class="link">⚙️ Settings</a> |
+      <a href="{% url 'account_logout' %}" class="link">Logout</a>
     </p>
 
     {% if profile and profile.can_moderate %}

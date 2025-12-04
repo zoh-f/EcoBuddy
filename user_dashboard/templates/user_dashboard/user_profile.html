@@ -253,8 +253,6 @@
         <div class="profile-header">
             {% if profile and profile.profile_picture %}
             <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
-            {% else %}
-            <img src="https://via.placeholder.com/120?text={{ profile_user.username|slice:':1' }}" alt="Profile Picture" class="profile-picture">
             {% endif %}
 
             <div class="profile-info">

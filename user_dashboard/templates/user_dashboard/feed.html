@@ -298,6 +298,10 @@
                     {% endfor %}
                 </div>
                 {% endif %}
+
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                    <a href="{% url 'flag_content' %}?type=post&id={{ post.id }}" style="color: #ff6b6b; text-decoration: none; font-size: 14px;">🚩 Report Post</a>
+                </div>
             </div>
             {% endfor %}
         {% else %}

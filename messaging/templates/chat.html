@@ -213,7 +213,7 @@
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            appendMessage("You", formData.get("content"), true);
+            //appendMessage("You", formData.get("content"), true);
             form.querySelector("textarea").value = "";
           } else {
             console.error(data.errors);
@@ -224,14 +224,18 @@
 
       // SSE (Server-Sent Events) for new messages
       if (typeof EventSource !== 'undefined') {
-        const eventSource = new EventSource(`/messaging/poll-chat-messages/${chatRoomId}/?after=${LAST_RENDERED_ID}`);
-        eventSource.onmessage = (event) => {
-          if (!event.data || event.data === "keep-alive") return;
-          const data = JSON.parse(event.data);
-          if (data.id <= LAST_RENDERED_ID) return;
-          LAST_RENDERED_ID = data.id;
-          appendMessage(data.sender, data.content, data.sender === CURRENT_USER);
-        };
+        setInterval(() => {
+  fetch(`/messaging/poll-chat-messages/${chatRoomId}/?after=${LAST_RENDERED_ID}`)
+    .then(response => response.json())
+    .then(data => {
+      data.messages.forEach(msg => {
+        LAST_RENDERED_ID = msg.id;
+        appendMessage(msg.display_name, msg.content, msg.sender === CURRENT_USER);
+      });
+    })
+    .catch(err => console.error(err));
+}, 1000);
+
       } else {
         console.warn("Your browser doesn't support EventSource.");
       }

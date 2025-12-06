@@ -21,3 +21,17 @@ class SuspensionCheckMiddleware:
 
         response = self.get_response(request)
         return response
+
+class FirstTimeSetupMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        if request.user.is_authenticated:
+            ui = getattr(request.user, "userinfo", None)
+            if ui and not ui.first_time_complete:
+                request.show_onboarding_modal = True
+
+        return response

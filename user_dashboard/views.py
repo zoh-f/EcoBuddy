@@ -35,15 +35,35 @@ def home(request):
 
     # Ensure a Profile exists
     profile, _ = Profile.objects.get_or_create(user=request.user)
+    show_modal = not profile.first_time_complete
+    topics = Post.TOPIC_CHOICES
+    preferred_topics_list = profile.preferred_topics.split(",") if profile.preferred_topics else []
 
     return render(request, "index.html", {
         "userinfo": userinfo,
         "profile": profile,
+        "topics": topics,
+        "show_onboarding": show_modal,
+        "preferred_topics_list": preferred_topics_list,
     })
 
 def logout_view(request):
     logout(request)
     return redirect('/')
+
+@login_required
+def finish_onboarding(request):
+    if request.method == "POST":
+        ui = request.user.profile
+        selected_topics = request.POST.getlist("topics")
+
+        ui.preferred_topics = ",".join(selected_topics)
+        ui.first_time_complete = True
+        ui.save()
+
+        messages.success(request, "Your preferences have been saved!")
+        return redirect("/") 
+
 
 def admin_page(request):
     # Get all non-superuser users and their profiles

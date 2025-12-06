@@ -19,6 +19,8 @@ class Profile(models.Model):
     display_name = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
+    preferred_topics = models.TextField(blank=True, default="")
+    first_time_complete = models.BooleanField(default=False)
 
     profile_picture = models.ImageField(
         upload_to = "profile_pictures/",

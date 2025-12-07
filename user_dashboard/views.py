@@ -35,15 +35,35 @@ def home(request):
 
     # Ensure a Profile exists
     profile, _ = Profile.objects.get_or_create(user=request.user)
+    show_modal = not profile.first_time_complete
+    topics = Post.TOPIC_CHOICES
+    preferred_topics_list = profile.preferred_topics.split(",") if profile.preferred_topics else []
 
     return render(request, "index.html", {
         "userinfo": userinfo,
         "profile": profile,
+        "topics": topics,
+        "show_onboarding": show_modal,
+        "preferred_topics_list": preferred_topics_list,
     })
 
 def logout_view(request):
     logout(request)
     return redirect('/')
+
+@login_required
+def finish_onboarding(request):
+    if request.method == "POST":
+        ui = request.user.profile
+        selected_topics = request.POST.getlist("topics")
+
+        ui.preferred_topics = ",".join(selected_topics)
+        ui.first_time_complete = True
+        ui.save()
+
+        messages.success(request, "Your preferences have been saved!")
+        return redirect("/") 
+
 
 def admin_page(request):
     # Get all non-superuser users and their profiles
@@ -515,34 +535,51 @@ def suspended_users_list(request):
 def public_feed(request):
     """
     Show PUBLIC posts + friends' PRIVATE posts
-    Filter by: topic, hashtag, date, text search
+    Defaults to filtering by user's preferred topics unless ?mode=all
     """
+
     from django.db.models import Q
     from datetime import timedelta
+
+    # Get mode: preferred (default) or all
+    mode = request.GET.get("mode", "preferred")
 
     # Get friend IDs
     friend_ids = Friendship.get_friends(request.user).values_list('id', flat=True)
 
-    # Base query: not draft, not removed
+    # Base query
     base = Q(is_draft=False, is_removed=False)
-
-    # Visibility: PUBLIC or (PRIVATE and from friend)
     visibility = Q(privacy=Post.PUBLIC) | Q(privacy=Post.PRIVATE, user_id__in=friend_ids)
 
     posts = Post.objects.filter(base & visibility)
 
-    # FILTERS
-    # 1. Topic
-    topic = request.GET.get('topic')
-    if topic and topic != 'all':
-        posts = posts.filter(topic=topic)
+    # --- Load preferred topics ---
+    profile = request.user.profile
+    preferred_topics = profile.preferred_topics.split(",") if profile.preferred_topics else []
 
-    # 2. Hashtag
+    # --- Topic Filter ---
+    topic = request.GET.get('topic')
+
+    if topic == 'preferred' and preferred_topics:
+        # User wants preferred topics
+        posts = posts.filter(topic__in=preferred_topics)
+        active_topic_button = 'preferred'
+    elif topic == 'all' or not topic:
+        # Show all topics
+        active_topic_button = 'all'
+        # no filtering needed
+    else:
+        # Specific topic selected
+        posts = posts.filter(topic=topic)
+        active_topic_button = topic
+
+
+    # --- Hashtag Filter ---
     hashtag = request.GET.get('hashtag', '').strip().lower().lstrip('#')
     if hashtag:
         posts = posts.filter(hashtags__icontains=hashtag)
 
-    # 3. Temporal (past X days)
+    # --- Time Filter ---
     days = request.GET.get('days')
     if days:
         try:
@@ -551,19 +588,22 @@ def public_feed(request):
         except ValueError:
             pass
 
-    # 4. Text search
+    # --- Search Filter ---
     search = request.GET.get('search', '').strip()
     if search:
-        posts = posts.filter(Q(content__icontains=search) | Q(title__icontains=search))
+        posts = posts.filter(
+            Q(content__icontains=search) |
+            Q(title__icontains=search)
+        )
 
-    # Optimize queries
+    # Optimize DB queries
     posts = posts.select_related('user', 'user__profile').order_by('-created_at')
 
     # Add display names
     for post in posts:
         try:
-            userinfo = UserInfo.objects.get(username=post.user.username)
-            post.author_display_name = userinfo.display_name or post.user.username
+            ui = UserInfo.objects.get(username=post.user.username)
+            post.author_display_name = ui.display_name or post.user.username
         except UserInfo.DoesNotExist:
             post.author_display_name = post.user.username
 
@@ -571,12 +611,16 @@ def public_feed(request):
         'posts': posts,
         'topic_choices': Post.TOPIC_CHOICES,
         'current_topic': topic or 'all',
+        'preferred_topics': preferred_topics,
+        'active_topic_button': active_topic_button,
+        'mode': mode,  # ← NEW
         'current_hashtag': hashtag,
         'current_days': days,
         'current_search': search,
     }
 
     return render(request, 'user_dashboard/feed.html', context)
+
 
 
 # ============= FRIEND SYSTEM =============

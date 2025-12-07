@@ -240,12 +240,30 @@
         <div class="filters">
             <h3>Filter Posts</h3>
 
-            <div class="topic-filters">
-                <a href="{% url 'public_feed' %}?topic=all" class="topic-btn {% if current_topic == 'all' %}active{% endif %}">All Topics</a>
-                {% for topic_value, topic_display in topic_choices %}
-                <a href="{% url 'public_feed' %}?topic={{ topic_value }}" class="topic-btn {% if current_topic == topic_value %}active{% endif %}">{{ topic_display }}</a>
-                {% endfor %}
-            </div>
+        <div class="topic-filters">
+  
+
+            <!-- All Topics button -->
+            <a href="{% url 'public_feed' %}?topic=all" class="topic-btn {% if active_topic_button == 'all' %}active{% endif %}">
+                All Topics
+            </a>
+
+            <!-- Preferred Topics button (only show if user has preferred topics) -->
+            {% if preferred_topics %}
+            <a href="{% url 'public_feed' %}?topic=preferred" 
+            class="topic-btn {% if active_topic_button == 'preferred' %}active{% endif %}">
+                Your Interests
+            </a>
+            {% endif %}
+
+            <!-- Individual topic buttons -->
+            {% for topic_value, topic_display in topic_choices %}
+            <a href="{% url 'public_feed' %}?topic={{ topic_value }}" class="topic-btn {% if active_topic_button == topic_value %}active{% endif %}">
+                {{ topic_display }}
+            </a>
+            {% endfor %}
+        </div>
+
 
             <form method="get" action="{% url 'public_feed' %}">
                 <div class="filter-group">

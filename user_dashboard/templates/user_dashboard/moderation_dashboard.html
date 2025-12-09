@@ -8,55 +8,218 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #fff7e6;
-            color: #222;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            color: #222;
         }
-        .container {
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
             max-width: 1200px;
             margin: 0 auto;
-            background: #f9f9f9;
-            border-radius: 20px;
-            padding: 32px;
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        h1 {
-            color: #ff6b6b;
-            margin-bottom: 10px;
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
         }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .nav-btn.warning {
+            background: #ff9800;
+            color: #fff;
+        }
+
+        .nav-btn.warning:hover {
+            background: #f57c00;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #ff9800;
+        }
+
+        .page-header h1 {
+            color: #ff9800;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #666;
+        }
+
         .stats {
             display: flex;
             gap: 20px;
-            margin: 20px 0;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
+
         .stat-box {
             background: #fff;
             padding: 20px;
             border-radius: 12px;
             flex: 1;
+            min-width: 150px;
             text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
+
+        .stat-box.pending {
+            border-top: 4px solid #ff6b6b;
+        }
+
+        .stat-box.reviewed {
+            border-top: 4px solid #4caf50;
+        }
+
+        .stat-box.suspended {
+            border-top: 4px solid #ff9800;
+        }
+
         .stat-number {
             font-size: 36px;
             font-weight: bold;
+            color: #2c5f2d;
+        }
+
+        .stat-box.pending .stat-number {
             color: #ff6b6b;
         }
-        .flag-list {
-            margin-top: 30px;
+
+        .stat-box.suspended .stat-number {
+            color: #ff9800;
         }
-        .flag-item {
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .quick-links {
             background: #fff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .quick-links a {
+            color: #2c5f2d;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+
+        .flag-list {
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .flag-list h2 {
+            color: #2c5f2d;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .flag-item {
+            background: #f9f9f9;
             padding: 20px;
             margin-bottom: 15px;
             border-radius: 12px;
             border-left: 4px solid #ff6b6b;
         }
+
+        .flag-item:last-child {
+            margin-bottom: 0;
+        }
+
         .flag-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
+
+        .flag-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
         .flag-type {
             background: #ff6b6b;
             color: white;
@@ -65,25 +228,44 @@
             font-size: 12px;
             font-weight: 600;
         }
+
         .flag-reason {
             background: #ffe0e0;
             color: #c82333;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
-            margin-left: 10px;
         }
+
+        .flag-meta {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .flag-description {
+            margin: 10px 0;
+            color: #555;
+        }
+
         .flag-content {
             margin: 15px 0;
             padding: 15px;
-            background: #f5f5f5;
+            background: #fff;
             border-radius: 8px;
+            border: 1px solid #e0e0e0;
         }
+
+        .flag-content strong {
+            color: #2c5f2d;
+        }
+
         .btn-group {
             display: flex;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
+
         .btn {
             padding: 8px 16px;
             border-radius: 8px;
@@ -93,52 +275,70 @@
             border: none;
             cursor: pointer;
         }
+
         .btn-danger {
             background: #dc3545;
             color: white;
         }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
         .btn-secondary {
             background: #6c757d;
             color: white;
         }
-        .btn:hover {
-            opacity: 0.9;
+
+        .btn-secondary:hover {
+            background: #5a6268;
         }
-        .back-link {
-            color: #0070f3;
-            text-decoration: underline;
-            margin-top: 20px;
-            display: inline-block;
-        }
+
         .no-flags {
             text-align: center;
             padding: 40px;
             color: #666;
         }
+
+        .no-flags p {
+            font-size: 18px;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🛡️ Moderation Dashboard</h1>
-        <p>Welcome, <strong>{{ request.user.username }}</strong> (Moderator)</p>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
 
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-number">{{ total_pending }}</div>
-                <div>Pending Flags</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number">{{ total_reviewed_today }}</div>
-                <div>Reviewed Today</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number">{{ total_suspended }}</div>
-                <div>Suspended Users</div>
-            </div>
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'public_feed' %}" class="nav-btn">📰 Feed</a>
+        <a href="{% url 'suspended_users_list' %}" class="nav-btn warning">🚫 Suspended Users</a>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🛡️ Moderation Dashboard</h1>
+            <p>Welcome, <strong>{{ request.user.username }}</strong> — You have moderator privileges</p>
         </div>
 
-        <div style="margin: 20px 0;">
-            <a href="{% url 'suspended_users_list' %}" class="back-link" style="margin: 0;">View Suspended Users →</a>
+        <div class="stats">
+            <div class="stat-box pending">
+                <div class="stat-number">{{ total_pending }}</div>
+                <div class="stat-label">Pending Flags</div>
+            </div>
+            <div class="stat-box reviewed">
+                <div class="stat-number">{{ total_reviewed_today }}</div>
+                <div class="stat-label">Reviewed Today</div>
+            </div>
+            <div class="stat-box suspended">
+                <div class="stat-number">{{ total_suspended }}</div>
+                <div class="stat-label">Suspended Users</div>
+            </div>
         </div>
 
         <div class="flag-list">
@@ -148,20 +348,20 @@
                 {% for flag in pending_flags %}
                 <div class="flag-item">
                     <div class="flag-header">
-                        <div>
+                        <div class="flag-badges">
                             <span class="flag-type">{{ flag.get_content_type_display }}</span>
                             <span class="flag-reason">{{ flag.get_reason_display }}</span>
                         </div>
-                        <small>Reported {{ flag.created_at|timesince }} ago by {{ flag.reporter.username }}</small>
+                        <span class="flag-meta">Reported {{ flag.created_at|timesince }} ago by {{ flag.reporter.username }}</span>
                     </div>
 
                     {% if flag.description %}
-                    <p><strong>Description:</strong> {{ flag.description }}</p>
+                    <p class="flag-description"><strong>Description:</strong> {{ flag.description }}</p>
                     {% endif %}
 
                     {% if flag.content_obj %}
                     <div class="flag-content">
-                        <strong>Content:</strong>
+                        <strong>Flagged Content:</strong>
                         {% if flag.content_type == 'post' %}
                             <p><strong>Title:</strong> {{ flag.content_obj.title }}</p>
                             <p>{{ flag.content_obj.content|truncatewords:50 }}</p>
@@ -194,8 +394,6 @@
                 </div>
             {% endif %}
         </div>
-
-        <a href="{% url 'home' %}" class="back-link">← Back to Dashboard</a>
     </div>
 </body>
 </html>

@@ -3,78 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Posts</title>
-    <style> 
+    <title>My Posts - EcoBuddy</title>
+    <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #fff7e6;
+            margin: 0;
+            padding: 0;
+            color: #222;
         }
-        h1 {
-            color: #333;
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
         }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            color: #2c5f2d;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
         .post {
             background: #fff;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
             margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
+
+        .post-meta {
+            margin-bottom: 10px;
+        }
+
+        .topic-badge {
+            background: #e8f5e9;
+            color: #2c5f2d;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .privacy-badge {
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .privacy-badge.public { color: #4caf50; }
+        .privacy-badge.private { color: #ff6b6b; }
+
+        .draft-badge {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .post h3 {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .post p {
+            color: #555;
+            line-height: 1.6;
+        }
+
         .post img {
             max-width: 100%;
-            height: auto;
-            margin-top: 10px;
-            border-radius: 5px;
+            border-radius: 8px;
+            margin: 10px 0;
         }
-        </style>
+
+        .hashtag {
+            color: #4caf50;
+            margin-right: 8px;
+        }
+
+        .post-date {
+            font-size: 14px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background: #fff;
+            border-radius: 12px;
+        }
+
+        .btn-primary {
+            background: #4caf50;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <div class="topbar">
-        <a href="{% url 'home' %}" class="btn">Back to Home</a>
-        <a href="{% url 'public_feed' %}" class="btn" style="margin-left:10px;">Feed</a>
-        <a href="{% url 'create_post' %}" class="btn" style="margin-left:10px;">+ Create Post</a>
-        <a href="{% url 'drafts_page' %}" class="btn" style="margin-left:10px;">My Drafts</a>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
+        </div>
     </div>
 
-    <h2>My Posts</h2>
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'public_feed' %}" class="nav-btn">📰 Feed</a>
+        <a href="{% url 'create_post' %}" class="nav-btn">➕ Create Post</a>
+        <a href="{% url 'drafts_page' %}" class="nav-btn secondary">📋 Drafts</a>
+        <a href="{% url 'friends_list' %}" class="nav-btn secondary">👥 Friends</a>
+    </div>
 
-    {% if posts %}
-        {% for p in posts %}
-            <div class="post">
-                <div style="margin-bottom: 10px;">
-                    <span style="background: #e8f5e9; color: #2c5f2d; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
-                        {% for choice in p.TOPIC_CHOICES %}
-                            {% if choice.0 == p.topic %}{{ choice.1 }}{% endif %}
+    <div class="container">
+        <h1 class="page-title">📝 My Posts</h1>
+
+        {% if posts %}
+            {% for p in posts %}
+                <div class="post">
+                    <div class="post-meta">
+                        <span class="topic-badge">
+                            {% for choice in p.TOPIC_CHOICES %}
+                                {% if choice.0 == p.topic %}{{ choice.1 }}{% endif %}
+                            {% endfor %}
+                        </span>
+                        {% if p.privacy == 'private' %}
+                        <span class="privacy-badge private">🔒 Friends Only</span>
+                        {% else %}
+                        <span class="privacy-badge public">🌍 Public</span>
+                        {% endif %}
+                        {% if p.is_draft %}
+                        <span class="draft-badge">📝 DRAFT</span>
+                        {% endif %}
+                    </div>
+                    <h3>{{ p.title }}</h3>
+                    <p>{{ p.content }}</p>
+                    {% if p.photo %}
+                        <img src="{{ p.photo.url }}" alt="Post photo">
+                    {% endif %}
+                    {% if p.hashtags %}
+                    <div>
+                        {% for hashtag in p.get_hashtags_display %}
+                        <span class="hashtag">{{ hashtag }}</span>
                         {% endfor %}
-                    </span>
-                    {% if p.privacy == 'private' %}
-                    <span style="color: #ff6b6b; font-size: 12px; margin-left: 10px;">🔒 Friends Only</span>
-                    {% else %}
-                    <span style="color: #4caf50; font-size: 12px; margin-left: 10px;">🌍 Public</span>
+                    </div>
                     {% endif %}
-                    {% if p.is_draft %}
-                    <span style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 12px; margin-left: 10px;">📝 DRAFT</span>
-                    {% endif %}
+                    <div class="post-date">Posted {{ p.created_at|date:"M j, Y, g:i a" }}</div>
                 </div>
-                <h3>{{ p.title }}</h3>
-                <p>{{ p.content }}</p>
-                {% if p.photo %}
-                    <img src="{{ p.photo.url }}" alt="photo">
-                {% endif %}
-                {% if p.hashtags %}
-                <div style="margin-top: 10px;">
-                    <strong style="font-size: 14px;">Hashtags:</strong>
-                    {% for hashtag in p.get_hashtags_display %}
-                    <span style="color: #4caf50; margin-right: 8px;">{{ hashtag }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                <small>Posted {{ p.created_at|date:"M j, Y, g:i a" }}</small>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>You haven't posted anything yet.</p>
+                <a href="{% url 'create_post' %}" class="btn-primary">➕ Create Your First Post</a>
             </div>
-        {% endfor %}
-    {% else %}
-        <p>You haven't posted anything yet.</p>
-    {% endif %}
-    
+        {% endif %}
+    </div>
 </body>
 </html>

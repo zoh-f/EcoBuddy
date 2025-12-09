@@ -7,11 +7,11 @@ from user_info.models import UserInfo
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
 from .decorators import moderator_required
-from urllib.parse import urlparse, urlunparse
 import boto3
 
 # Create your views here.
@@ -888,8 +888,9 @@ def toggle_like(request, post_id):
     else:
         post.likes.add(request.user)
         liked = True
-    referer = request.META.get("HTTP_REFERER") or "/"
-    parsed = urlparse(referer)
-    parsed = parsed._replace(fragment=f"post-{post.id}")
-    target_url = urlunparse(parsed)
-    return redirect(target_url)
+    if request.headers.get("X-Requested-With")=="XMLHttpRequest":
+        return JsonResponse({
+            "liked": liked,
+            "like_count": post.likes.count()
+        })
+    return redirect(request.META.get("HTTP_REFERER", "public_feed"))

@@ -216,25 +216,6 @@
                     </div>
                     <h3>{{ p.title }}</h3>
                     <p>{{ p.content }}</p>
-                    
-                    <!--like button-->
-                    <form action="{% url 'toggle_like' p.id %}" method="POST" style="display:inline;">
-                        {% csrf_token %}
-                        {% if user in p.like.all %}
-                            <button type="submit" style="background:none; border:none; cursor:pointer; font-size:22px; color:#e63946;">
-                                ❤️
-                            </button>
-                        {% else %}
-                            <button type="submit" style="background:none; border:none; cursor:pointer; font-size:22px; color:#555;">
-                                🤍
-                            </button>
-                        {% endif %}
-                    </form>
-
-                    <span style="margin-left:6px; color:#888; font-size:14px;">
-                        {{p.likes.count}} likes
-                    </span>
-
                     {% if p.photo %}
                         <img src="{{ p.photo.url }}" alt="Post photo">
                     {% endif %}
@@ -245,6 +226,11 @@
                         {% endfor %}
                     </div>
                     {% endif %}
+
+                    <div style="margin-top:8px; font-size:14px; color:#888;">
+                        {{ p.likes.count }} likes
+                    </div>
+                    
                     <div class="post-date">Posted {{ p.created_at|date:"M j, Y, g:i a" }}</div>
                 </div>
             {% endfor %}

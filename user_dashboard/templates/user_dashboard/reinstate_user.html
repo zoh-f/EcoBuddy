@@ -3,33 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reinstate User</title>
+    <title>Reinstate User - EcoBuddy</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #fff7e6;
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            color: #222;
+        }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .nav-btn.warning {
+            background: #ff9800;
+            color: #fff;
+        }
+
+        .nav-btn.warning:hover {
+            background: #f57c00;
         }
 
         .container {
             max-width: 700px;
-            margin: 0 auto;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .reinstate-box {
             background: #ffffff;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         h1 {
-            color: #2ecc71;
+            color: #4caf50;
             margin-bottom: 20px;
+            font-size: 28px;
         }
 
         .user-info {
-            background: #f1f5f9;
-            border-left: 4px solid #186ce2;
+            background: #f5f5f5;
+            border-left: 4px solid #2196f3;
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 4px;
@@ -54,6 +134,7 @@
 
         .suspension-details p {
             margin: 8px 0;
+            line-height: 1.6;
         }
 
         .button-group {
@@ -61,66 +142,76 @@
             gap: 15px;
         }
 
-        button[type="submit"] {
+        .btn {
             flex: 1;
             padding: 12px 24px;
-            background-color: #2ecc71;
-            color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #27ae60;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            padding: 12px 24px;
-            background-color: #757575;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
             text-decoration: none;
             text-align: center;
-            display: inline-block;
+            font-weight: 500;
         }
 
-        .btn-cancel:hover {
+        .btn-success {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #45a049;
+        }
+
+        .btn-secondary {
+            background-color: #757575;
+            color: white;
+        }
+
+        .btn-secondary:hover {
             background-color: #616161;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'moderation_dashboard' %}" class="nav-btn warning">🛡️ Moderation</a>
+        <a href="{% url 'suspended_users_list' %}" class="nav-btn warning">🚫 Suspended Users</a>
+    </div>
+
     <div class="container">
-        <h1>Reinstate User Account</h1>
+        <div class="reinstate-box">
+            <h1>✅ Reinstate User Account</h1>
 
-        <div class="user-info">
-            <p><strong>Username:</strong> {{ user_to_reinstate.username }}</p>
-            <p><strong>Email:</strong> {{ user_to_reinstate.email }}</p>
-        </div>
-
-        <div class="suspension-details">
-            <h3>Current Suspension Details</h3>
-            <p><strong>Suspended by:</strong> {{ profile.suspended_by.username }}</p>
-            <p><strong>Suspended on:</strong> {{ profile.suspended_at|date:"M j, Y, g:i a" }}</p>
-            <p><strong>Reason:</strong> {{ profile.suspension_reason }}</p>
-        </div>
-
-        <form method="POST">
-            {% csrf_token %}
-
-            <div class="button-group">
-                <button type="submit">Reinstate User</button>
-                <a href="{% url 'suspended_users_list' %}" class="btn-cancel">Cancel</a>
+            <div class="user-info">
+                <p><strong>Username:</strong> {{ user_to_reinstate.username }}</p>
+                <p><strong>Email:</strong> {{ user_to_reinstate.email }}</p>
             </div>
-        </form>
+
+            <div class="suspension-details">
+                <h3>Current Suspension Details</h3>
+                <p><strong>Suspended by:</strong> {{ profile.suspended_by.username }}</p>
+                <p><strong>Suspended on:</strong> {{ profile.suspended_at|date:"M j, Y, g:i a" }}</p>
+                <p><strong>Reason:</strong> {{ profile.suspension_reason }}</p>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success">Reinstate User</button>
+                    <a href="{% url 'suspended_users_list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>

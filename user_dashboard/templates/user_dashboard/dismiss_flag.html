@@ -8,50 +8,151 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #fff7e6;
-            color: #222;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            color: #222;
         }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .nav-btn.warning {
+            background: #ff9800;
+            color: #fff;
+        }
+
+        .nav-btn.warning:hover {
+            background: #f57c00;
+        }
+
         .container {
             max-width: 700px;
-            margin: 40px auto;
-            background: #f9f9f9;
-            border-radius: 20px;
-            padding: 32px;
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+            margin: 50px auto;
+            padding: 0 20px;
         }
+
+        .dismiss-box {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
         h1 {
             color: #6c757d;
             margin-bottom: 20px;
+            font-size: 28px;
         }
+
         .info-box {
-            background: #d1ecf1;
-            border-left: 4px solid #0c5460;
-            padding: 16px;
-            border-radius: 8px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 4px;
             margin-bottom: 20px;
-            color: #0c5460;
         }
+
+        .info-box p {
+            margin: 0;
+            color: #1565c0;
+        }
+
         .flag-details {
-            background: #fff;
+            background: #f5f5f5;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 8px;
             margin: 20px 0;
-            border: 1px solid #e0e0e0;
+            border-left: 4px solid #ff9800;
         }
+
+        .flag-details h3 {
+            margin-top: 0;
+            color: #ff9800;
+        }
+
+        .flag-details p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
             color: #333;
         }
+
         textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
             font-family: inherit;
@@ -59,61 +160,94 @@
             min-height: 100px;
             resize: vertical;
         }
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
+
+        textarea:focus {
+            outline: none;
+            border-color: #4caf50;
         }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 500;
+        }
+
         .btn-primary {
-            background: #6c757d;
+            background-color: #6c757d;
             color: white;
         }
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-            margin-left: 10px;
+
+        .btn-primary:hover {
+            background-color: #5a6268;
         }
-        .btn:hover {
-            opacity: 0.9;
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #bdbdbd;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'moderation_dashboard' %}" class="nav-btn warning">🛡️ Moderation</a>
+    </div>
+
     <div class="container">
-        <h1>Dismiss Flag</h1>
+        <div class="dismiss-box">
+            <h1>🗑️ Dismiss Flag</h1>
 
-        <div class="info-box">
-            <strong>Note:</strong> Dismissing this flag means no action will be taken. The content will remain visible.
-        </div>
-
-        <div class="flag-details">
-            <h3>Flag Details</h3>
-            <p><strong>Reported by:</strong> {{ flag.reporter.username }}</p>
-            <p><strong>Content Type:</strong> {{ flag.get_content_type_display }}</p>
-            <p><strong>Reason:</strong> {{ flag.get_reason_display }}</p>
-            {% if flag.description %}
-            <p><strong>Description:</strong> {{ flag.description }}</p>
-            {% endif %}
-            <p><strong>Reported:</strong> {{ flag.created_at|date:"F j, Y g:i A" }}</p>
-        </div>
-
-        <form method="POST">
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label for="notes">Moderator Notes (optional):</label>
-                <textarea id="notes" name="notes" placeholder="Explain why this flag is being dismissed...">No violation found</textarea>
+            <div class="info-box">
+                <p><strong>Note:</strong> Dismissing this flag means no action will be taken. The content will remain visible.</p>
             </div>
 
-            <div>
-                <button type="submit" class="btn btn-primary">Dismiss Flag</button>
-                <a href="{% url 'moderation_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            <div class="flag-details">
+                <h3>Flag Details</h3>
+                <p><strong>Reported by:</strong> {{ flag.reporter.username }}</p>
+                <p><strong>Content Type:</strong> {{ flag.get_content_type_display }}</p>
+                <p><strong>Reason:</strong> {{ flag.get_reason_display }}</p>
+                {% if flag.description %}
+                <p><strong>Description:</strong> {{ flag.description }}</p>
+                {% endif %}
+                <p><strong>Reported:</strong> {{ flag.created_at|date:"F j, Y g:i A" }}</p>
             </div>
-        </form>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="notes">Moderator Notes (optional):</label>
+                    <textarea id="notes" name="notes" placeholder="Explain why this flag is being dismissed...">No violation found</textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Dismiss Flag</button>
+                    <a href="{% url 'moderation_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>

@@ -6,47 +6,96 @@
     <title>Create Post - EcoBuddy</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #fff7e6;
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            color: #222;
+        }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
         }
 
-        h1 {
+        .page-title {
             color: #2c5f2d;
+            font-size: 28px;
             margin-bottom: 20px;
-        }
-
-        .nav-links {
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-links a {
-            color: #2c5f2d;
-            text-decoration: none;
-            margin-right: 20px;
-            font-weight: bold;
-        }
-
-        .nav-links a:hover {
-            text-decoration: underline;
         }
 
         form {
             background: #fff;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .form-group {
@@ -68,7 +117,8 @@
             border: 2px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
-            font-family: Arial, sans-serif;
+            font-family: inherit;
+            box-sizing: border-box;
         }
 
         input[type="text"]:focus,
@@ -87,6 +137,7 @@
             border: 2px solid #ddd;
             border-radius: 6px;
             width: 100%;
+            box-sizing: border-box;
         }
 
         .privacy-options {
@@ -126,7 +177,6 @@
             font-size: 12px;
             color: #666;
             margin-top: 5px;
-            font-style: italic;
         }
 
         .button-group {
@@ -138,7 +188,7 @@
         button, .btn {
             padding: 12px 24px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             text-decoration: none;
@@ -162,42 +212,25 @@
         .btn-secondary:hover {
             background-color: #616161;
         }
-
-        .messages {
-            margin-bottom: 20px;
-        }
-
-        .message {
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Create a New Post</h1>
-
-        <div class="nav-links">
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'public_feed' %}">Feed</a>
-            <a href="{% url 'post_page' %}">My Posts</a>
-            <a href="{% url 'drafts_page' %}">My Drafts</a>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
         </div>
+    </div>
 
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'public_feed' %}" class="nav-btn">📰 Feed</a>
+        <a href="{% url 'post_page' %}" class="nav-btn secondary">📝 My Posts</a>
+        <a href="{% url 'drafts_page' %}" class="nav-btn secondary">📋 Drafts</a>
+    </div>
 
+    <div class="container">
+        <h1 class="page-title">➕ Create a New Post</h1>
 
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}

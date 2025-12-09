@@ -359,7 +359,7 @@
 
         {% if posts %}
             {% for post in posts %}
-            <div class="post">
+            <div class="post" id="post-{{ post.id }}">
                 <div class="post-header">
                     <div>
                         <a href="{% url 'user_profile' post.user.username %}" class="post-author">{{ post.author_display_name }}</a>
@@ -373,6 +373,24 @@
 
                 <div class="post-title">{{ post.title }}</div>
                 <div class="post-content">{{ post.content }}</div>
+
+                <!-- like button-->
+                <form action="{% url 'toggle_like' post.id %}" method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    {% if user in post.likes.all %}
+                        <button type="submit" style="background:none; border:none; cursor:pointer; font-size:22px; color:#e63946">
+                            ❤️
+                        </button>
+                    {% else %}
+                        <button type="submit" style="background:none; border:none; cursor:pointer; font-size:22px; color:#555;">
+                            🤍
+                        </button>
+                    {% endif %}
+                </form>
+
+                <span style="margin-left:6px; color:#888; font-size:14px;">
+                    {{post.likes.count}} likes
+                </span>
 
                 {% if post.photo %}
                 <img src="{{ post.photo.url }}" alt="Post photo" class="post-photo">

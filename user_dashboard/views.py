@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
 from .decorators import moderator_required
+from urllib.parse import urlparse, urlunparse
 import boto3
 
 # Create your views here.
@@ -876,3 +877,19 @@ def publish_draft(request):
         return redirect('post_page')
 
     return render(request, 'user_dashboard/confirm_publish.html', {'post': post})
+
+# ========== LIKE/UNLIKE FEATURE =========
+@login_required
+def toggle_like(request, post_id):
+    post=get_object_or_404(Post, id=post_id)
+    if request.user in post.likes.all():
+        post.likes.remove(request.user)
+        liked = False
+    else:
+        post.likes.add(request.user)
+        liked = True
+    referer = request.META.get("HTTP_REFERER") or "/"
+    parsed = urlparse(referer)
+    parsed = parsed._replace(fragment=f"post-{post.id}")
+    target_url = urlunparse(parsed)
+    return redirect(target_url)

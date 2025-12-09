@@ -6,53 +6,129 @@
     <title>Sustainability Feed - EcoBuddy</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #fff7e6;
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            color: #222;
+        }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
         }
 
         .container {
             max-width: 900px;
-            margin: 0 auto;
+            margin: 30px auto;
+            padding: 0 20px;
         }
 
-        h1 {
+        .page-title {
             color: #2c5f2d;
-            margin-bottom: 10px;
-        }
-
-        .nav-links {
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
+            font-size: 28px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-links a {
-            color: #2c5f2d;
-            text-decoration: none;
-            margin-right: 20px;
-            font-weight: bold;
-        }
-
-        .nav-links a:hover {
-            text-decoration: underline;
         }
 
         .filters {
-            background: #ffffff;
+            background: #fff;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .filters h3 {
             margin-top: 0;
             color: #2c5f2d;
+        }
+
+        .topic-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .topic-btn {
+            padding: 8px 16px;
+            border: 2px solid #4caf50;
+            border-radius: 20px;
+            background: white;
+            color: #2c5f2d;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .topic-btn:hover {
+            background: #e8f5e9;
+        }
+
+        .topic-btn.active {
+            background: #4caf50;
+            color: white;
         }
 
         .filter-group {
@@ -63,16 +139,21 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #2c5f2d;
         }
 
-        .filter-group select,
-        .filter-group input[type="text"],
-        .filter-group input[type="number"] {
+        .filter-group input {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
             font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .filter-group input:focus {
+            outline: none;
+            border-color: #4caf50;
         }
 
         .filter-buttons {
@@ -83,11 +164,10 @@
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
             text-decoration: none;
-            display: inline-block;
         }
 
         .btn-primary {
@@ -108,40 +188,12 @@
             background-color: #616161;
         }
 
-        .topic-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .topic-btn {
-            padding: 8px 16px;
-            border: 2px solid #4caf50;
-            border-radius: 20px;
-            background: white;
-            color: #2c5f2d;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .topic-btn:hover {
-            background: #e8f5e9;
-        }
-
-        .topic-btn.active {
-            background: #4caf50;
-            color: white;
-        }
-
         .post {
-            background: #ffffff;
+            background: #fff;
             padding: 20px;
             margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .post-header {
@@ -192,6 +244,7 @@
         .post-content {
             line-height: 1.6;
             margin-bottom: 15px;
+            color: #555;
         }
 
         .post-photo {
@@ -216,54 +269,70 @@
             text-decoration: underline;
         }
 
+        .report-link {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .report-link a {
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .report-link a:hover {
+            text-decoration: underline;
+        }
+
         .no-posts {
             text-align: center;
             padding: 40px;
-            background: white;
-            border-radius: 8px;
+            background: #fff;
+            border-radius: 12px;
             color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Sustainability Feed</h1>
-
-        <div class="nav-links">
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'friends_list' %}">Friends</a>
-            <a href="{% url 'user_search' %}">Find Users</a>
-            <a href="{% url 'create_post' %}">Create Post</a>
-            <a href="{% url 'drafts_page' %}">My Drafts</a>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
         </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'friends_list' %}" class="nav-btn secondary">👥 Friends</a>
+        <a href="{% url 'user_search' %}" class="nav-btn secondary">🔍 Find Users</a>
+        <a href="{% url 'create_post' %}" class="nav-btn">➕ Create Post</a>
+        <a href="{% url 'drafts_page' %}" class="nav-btn secondary">📋 Drafts</a>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">📰 Sustainability Feed</h1>
 
         <div class="filters">
             <h3>Filter Posts</h3>
 
-        <div class="topic-filters">
-  
+            <div class="topic-filters">
+                <a href="{% url 'public_feed' %}?topic=all" class="topic-btn {% if active_topic_button == 'all' %}active{% endif %}">
+                    All Topics
+                </a>
 
-            <!-- All Topics button -->
-            <a href="{% url 'public_feed' %}?topic=all" class="topic-btn {% if active_topic_button == 'all' %}active{% endif %}">
-                All Topics
-            </a>
+                {% if preferred_topics %}
+                <a href="{% url 'public_feed' %}?topic=preferred" class="topic-btn {% if active_topic_button == 'preferred' %}active{% endif %}">
+                    Your Interests
+                </a>
+                {% endif %}
 
-            <!-- Preferred Topics button (only show if user has preferred topics) -->
-            {% if preferred_topics %}
-            <a href="{% url 'public_feed' %}?topic=preferred" 
-            class="topic-btn {% if active_topic_button == 'preferred' %}active{% endif %}">
-                Your Interests
-            </a>
-            {% endif %}
-
-            <!-- Individual topic buttons -->
-            {% for topic_value, topic_display in topic_choices %}
-            <a href="{% url 'public_feed' %}?topic={{ topic_value }}" class="topic-btn {% if active_topic_button == topic_value %}active{% endif %}">
-                {{ topic_display }}
-            </a>
-            {% endfor %}
-        </div>
-
+                {% for topic_value, topic_display in topic_choices %}
+                <a href="{% url 'public_feed' %}?topic={{ topic_value }}" class="topic-btn {% if active_topic_button == topic_value %}active{% endif %}">
+                    {{ topic_display }}
+                </a>
+                {% endfor %}
+            </div>
 
             <form method="get" action="{% url 'public_feed' %}">
                 <div class="filter-group">
@@ -317,8 +386,8 @@
                 </div>
                 {% endif %}
 
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-                    <a href="{% url 'flag_content' %}?type=post&id={{ post.id }}" style="color: #ff6b6b; text-decoration: none; font-size: 14px;">🚩 Report Post</a>
+                <div class="report-link">
+                    <a href="{% url 'flag_content' %}?type=post&id={{ post.id }}">🚩 Report Post</a>
                 </div>
             </div>
             {% endfor %}

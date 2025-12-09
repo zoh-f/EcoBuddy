@@ -7,20 +7,91 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 650px;
-            margin: 100px auto;
-            padding: 20px;
             background-color: #fff7e6;
-            text-align: center;
+            margin: 0;
+            padding: 0;
             color: #222;
         }
 
-        .confirmation-box {
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .confirm-box {
             background: #f9f9f9;
             padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             border: 2px solid #dc3545;
+            text-align: center;
         }
 
         h1 {
@@ -88,7 +159,6 @@
             text-decoration: none;
             display: inline-block;
             font-weight: 500;
-            transition: background-color 0.2s;
         }
 
         .btn-danger {
@@ -118,52 +188,64 @@
     </style>
 </head>
 <body>
-    <div class="confirmation-box">
-        <div class="warning-icon">⚠️</div>
-        <h1>Are You Absolutely Sure?</h1>
-
-        <p><strong>This action cannot be undone.</strong></p>
-        <p>You are about to permanently delete the account:</p>
-        <p class="username-highlight">{{ request.user.username }}</p>
-
-        <div class="final-warning">
-            🚨 PERMANENT DELETION - NO RECOVERY POSSIBLE 🚨
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
         </div>
+    </div>
 
-        <p><strong>Everything listed below will be permanently erased:</strong></p>
-        <ul>
-            <li>Your profile information and bio</li>
-            <li>All posts you've created</li>
-            <li>All images and photos you've uploaded</li>
-            <li>All messages and conversations</li>
-            <li>Your chat room memberships</li>
-            <li>All account data and history</li>
-        </ul>
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'account_settings' %}" class="nav-btn secondary">⚙️ Settings</a>
+    </div>
 
-        <p style="margin-top: 20px;">The deletion process will:</p>
-        <ul>
-            <li>Remove all files from Amazon S3 cloud storage</li>
-            <li>Delete all database records associated with your account</li>
-            <li>Log you out immediately</li>
-            <li>Make your username available for others to use</li>
-        </ul>
+    <div class="container">
+        <div class="confirm-box">
+            <div class="warning-icon">⚠️</div>
+            <h1>Are You Absolutely Sure?</h1>
 
-        <div class="button-group">
-            <!-- Cancel button - goes back to settings -->
-            <a href="{% url 'account_settings' %}" class="btn btn-secondary">
-                ✖ Cancel - Keep My Account
-            </a>
+            <p><strong>This action cannot be undone.</strong></p>
+            <p>You are about to permanently delete the account:</p>
+            <p class="username-highlight">{{ request.user.username }}</p>
 
-            <!-- Confirm deletion - submits POST request -->
-            <form method="post" action="{% url 'delete_account' %}" style="margin: 0;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">
-                    ✓ Yes, Delete My Account Forever
-                </button>
-            </form>
+            <div class="final-warning">
+                PERMANENT DELETION - NO RECOVERY POSSIBLE
+            </div>
+
+            <p><strong>Everything listed below will be permanently erased:</strong></p>
+            <ul>
+                <li>Your profile information and bio</li>
+                <li>All posts you've created</li>
+                <li>All images and photos you've uploaded</li>
+                <li>All messages and conversations</li>
+                <li>Your chat room memberships</li>
+                <li>All account data and history</li>
+            </ul>
+
+            <p style="margin-top: 20px;">The deletion process will:</p>
+            <ul>
+                <li>Remove all files from Amazon S3 cloud storage</li>
+                <li>Delete all database records associated with your account</li>
+                <li>Log you out immediately</li>
+                <li>Make your username available for others to use</li>
+            </ul>
+
+            <div class="button-group">
+                <a href="{% url 'account_settings' %}" class="btn btn-secondary">
+                    Cancel - Keep My Account
+                </a>
+
+                <form method="post" action="{% url 'delete_account' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        Yes, Delete My Account Forever
+                    </button>
+                </form>
+            </div>
+
+            <p class="countdown-text">Take a moment to reconsider. This decision is irreversible.</p>
         </div>
-
-        <p class="countdown-text">Take a moment to reconsider. This decision is irreversible.</p>
     </div>
 </body>
 </html>

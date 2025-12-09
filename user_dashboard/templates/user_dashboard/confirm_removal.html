@@ -8,22 +8,104 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #fff7e6;
-            color: #222;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            color: #222;
         }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .nav-btn.warning {
+            background: #ff9800;
+            color: #fff;
+        }
+
+        .nav-btn.warning:hover {
+            background: #f57c00;
+        }
+
         .container {
             max-width: 700px;
-            margin: 40px auto;
-            background: #f9f9f9;
-            border-radius: 20px;
-            padding: 32px;
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+            margin: 50px auto;
+            padding: 0 20px;
         }
+
+        .confirm-box {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
         h1 {
             color: #ff6b6b;
             margin-bottom: 20px;
         }
+
         .warning-box {
             background: #fff3cd;
             border-left: 4px solid #ffc107;
@@ -31,6 +113,7 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
+
         .content-preview {
             background: #fff;
             padding: 20px;
@@ -38,19 +121,27 @@
             margin: 20px 0;
             border: 1px solid #e0e0e0;
         }
+
+        .content-preview h3 {
+            color: #2c5f2d;
+            margin-top: 0;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
             color: #333;
         }
+
         textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
             font-family: inherit;
@@ -58,6 +149,17 @@
             min-height: 100px;
             resize: vertical;
         }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
         .btn {
             padding: 12px 24px;
             border-radius: 8px;
@@ -67,58 +169,78 @@
             border: none;
             cursor: pointer;
         }
+
         .btn-danger {
             background: #dc3545;
             color: white;
         }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
         .btn-secondary {
             background: #6c757d;
             color: white;
-            margin-left: 10px;
         }
-        .btn:hover {
-            opacity: 0.9;
+
+        .btn-secondary:hover {
+            background: #5a6268;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'moderation_dashboard' %}" class="nav-btn warning">🛡️ Moderation</a>
+    </div>
+
     <div class="container">
-        <h1>⚠️ Confirm Content Removal</h1>
+        <div class="confirm-box">
+            <h1>⚠️ Confirm Content Removal</h1>
 
-        <div class="warning-box">
-            <strong>Warning:</strong> This action will remove the content and mark it as violating community standards.
-        </div>
-
-        {% if post %}
-        <div class="content-preview">
-            <h3>Post Details</h3>
-            <p><strong>Title:</strong> {{ post.title }}</p>
-            <p><strong>Content:</strong> {{ post.content|truncatewords:100 }}</p>
-            <p><strong>Author:</strong> {{ post.user.username }}</p>
-            <p><strong>Created:</strong> {{ post.created_at|date:"F j, Y g:i A" }}</p>
-        </div>
-        {% elif message %}
-        <div class="content-preview">
-            <h3>Message Details</h3>
-            <p><strong>Content:</strong> {{ message.content|truncatewords:50 }}</p>
-            <p><strong>Sender:</strong> {{ message.sender.username }}</p>
-            <p><strong>Sent:</strong> {{ message.timestamp|date:"F j, Y g:i A" }}</p>
-        </div>
-        {% endif %}
-
-        <form method="POST">
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label for="reason">Removal Reason:</label>
-                <textarea id="reason" name="reason" placeholder="Explain why this content is being removed..." required>Violates community standards</textarea>
+            <div class="warning-box">
+                <strong>Warning:</strong> This action will remove the content and mark it as violating community standards.
             </div>
 
-            <div>
-                <button type="submit" class="btn btn-danger">Confirm Removal</button>
-                <a href="{% url 'moderation_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            {% if post %}
+            <div class="content-preview">
+                <h3>Post Details</h3>
+                <p><strong>Title:</strong> {{ post.title }}</p>
+                <p><strong>Content:</strong> {{ post.content|truncatewords:100 }}</p>
+                <p><strong>Author:</strong> {{ post.user.username }}</p>
+                <p><strong>Created:</strong> {{ post.created_at|date:"F j, Y g:i A" }}</p>
             </div>
-        </form>
+            {% elif message %}
+            <div class="content-preview">
+                <h3>Message Details</h3>
+                <p><strong>Content:</strong> {{ message.content|truncatewords:50 }}</p>
+                <p><strong>Sender:</strong> {{ message.sender.username }}</p>
+                <p><strong>Sent:</strong> {{ message.timestamp|date:"F j, Y g:i A" }}</p>
+            </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="reason">Removal Reason:</label>
+                    <textarea id="reason" name="reason" placeholder="Explain why this content is being removed..." required>Violates community standards</textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-danger">Confirm Removal</button>
+                    <a href="{% url 'moderation_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>

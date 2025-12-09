@@ -3,39 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Suspended</title>
+    <title>Account Suspended - EcoBuddy</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #fff7e6;
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            color: #222;
+        }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            min-height: 100vh;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
         }
 
         .container {
             max-width: 600px;
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            margin: 80px auto;
+            padding: 0 20px;
         }
 
-        h1 {
-            color: #d32f2f;
-            font-size: 32px;
-            margin-bottom: 10px;
+        .suspended-box {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            border-top: 4px solid #d32f2f;
         }
 
         .warning-icon {
             font-size: 64px;
-            color: #d32f2f;
             margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #d32f2f;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
 
         .info-box {
@@ -67,6 +89,7 @@
         .permanent-notice p {
             margin: 0;
             color: #856404;
+            line-height: 1.6;
         }
 
         .logout-btn {
@@ -75,10 +98,9 @@
             background-color: #757575;
             color: white;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 16px;
             margin-top: 20px;
-            transition: background-color 0.3s;
         }
 
         .logout-btn:hover {
@@ -87,21 +109,29 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="header-content">
+            <span class="logo">🌍 EcoBuddy</span>
+        </div>
+    </div>
+
     <div class="container">
-        <div class="warning-icon">⚠️</div>
-        <h1>Your Account Has Been Suspended</h1>
+        <div class="suspended-box">
+            <div class="warning-icon">⚠️</div>
+            <h1>Your Account Has Been Suspended</h1>
 
-        <div class="info-box">
-            <p><strong>Suspended on:</strong> {{ profile.suspended_at|date:"F j, Y, g:i a" }}</p>
-            <p><strong>Reason:</strong> {{ profile.suspension_reason }}</p>
+            <div class="info-box">
+                <p><strong>Suspended on:</strong> {{ profile.suspended_at|date:"F j, Y, g:i a" }}</p>
+                <p><strong>Reason:</strong> {{ profile.suspension_reason }}</p>
+            </div>
+
+            <div class="permanent-notice">
+                <p><strong>This is a permanent suspension.</strong><br>
+                If you believe this is an error, please contact support.</p>
+            </div>
+
+            <a href="{% url 'logout' %}" class="logout-btn">Log Out</a>
         </div>
-
-        <div class="permanent-notice">
-            <p><strong>This is a permanent suspension.</strong><br>
-            If you believe this is an error, please contact support.</p>
-        </div>
-
-        <a href="{% url 'logout' %}" class="logout-btn">Log Out</a>
     </div>
 </body>
 </html>

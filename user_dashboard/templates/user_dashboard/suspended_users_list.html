@@ -3,72 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suspended Users</title>
+    <title>Suspended Users - EcoBuddy</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #fff7e6;
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            color: #222;
+        }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .nav-btn.warning {
+            background: #ff9800;
+            color: #fff;
+        }
+
+        .nav-btn.warning:hover {
+            background: #f57c00;
         }
 
         .container {
             max-width: 1200px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 30px auto;
+            padding: 0 20px;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
+        .page-header {
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #ff9800;
         }
 
-        .stats {
-            background: #f1f5f9;
-            border-left: 4px solid #186ce2;
-            padding: 15px;
-            margin-bottom: 25px;
-            border-radius: 4px;
+        .page-header h1 {
+            color: #ff9800;
+            margin: 0 0 10px 0;
+            font-size: 28px;
         }
 
-        .stats p {
-            margin: 0;
-            font-size: 16px;
+        .stats-badge {
+            display: inline-block;
+            background: #fff3e0;
+            color: #e65100;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .table-container {
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            min-width: 700px;
         }
 
-        thead {
-            background-color: #f8f9fa;
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         th {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #dee2e6;
-            font-weight: bold;
-            color: #333;
+            background-color: #ff9800;
+            color: white;
+            font-weight: 600;
         }
 
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #dee2e6;
+        th:first-child {
+            border-radius: 8px 0 0 0;
         }
 
-        tbody tr:hover {
-            background-color: #f8f9fa;
+        th:last-child {
+            border-radius: 0 8px 0 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #fff3e0;
         }
 
         .reason-cell {
-            max-width: 300px;
+            max-width: 250px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -76,88 +169,83 @@
 
         .btn-reinstate {
             padding: 8px 16px;
-            background-color: #2ecc71;
+            background-color: #4caf50;
             color: white;
             text-decoration: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 14px;
-            transition: background-color 0.3s;
-            display: inline-block;
+            font-weight: 500;
         }
 
         .btn-reinstate:hover {
-            background-color: #27ae60;
+            background-color: #45a049;
         }
 
         .no-users {
             text-align: center;
             padding: 40px 20px;
-            color: #757575;
+            color: #666;
             font-size: 18px;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #757575;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: background-color 0.3s;
-        }
-
-        .back-link:hover {
-            background-color: #616161;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Suspended Users</h1>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
 
-        <div class="stats">
-            <p><strong>Currently suspended:</strong> {{ total_suspended }} user{{ total_suspended|pluralize }}</p>
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'moderation_dashboard' %}" class="nav-btn warning">🛡️ Moderation</a>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🚫 Suspended Users</h1>
+            <span class="stats-badge">{{ total_suspended }} user{{ total_suspended|pluralize }} currently suspended</span>
         </div>
 
-        {% if suspended_profiles %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Suspended By</th>
-                        <th>Suspended On</th>
-                        <th>Reason</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for profile in suspended_profiles %}
-                    <tr>
-                        <td>{{ profile.user.username }}</td>
-                        <td>{{ profile.user.email }}</td>
-                        <td>{{ profile.suspended_by.username }}</td>
-                        <td>{{ profile.suspended_at|date:"M j, Y, g:i a" }}</td>
-                        <td class="reason-cell" title="{{ profile.suspension_reason }}">
-                            {{ profile.suspension_reason|truncatewords:15 }}
-                        </td>
-                        <td>
-                            <a href="{% url 'reinstate_user' %}?id={{ profile.user.id }}" class="btn-reinstate">
-                                Reinstate
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="no-users">
-                No users are currently suspended.
-            </div>
-        {% endif %}
-
-        <a href="{% url 'moderation_dashboard' %}" class="back-link">Back to Moderation Dashboard</a>
+        <div class="table-container">
+            {% if suspended_profiles %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Suspended By</th>
+                            <th>Suspended On</th>
+                            <th>Reason</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in suspended_profiles %}
+                        <tr>
+                            <td><strong>{{ profile.user.username }}</strong></td>
+                            <td>{{ profile.user.email }}</td>
+                            <td>{{ profile.suspended_by.username }}</td>
+                            <td>{{ profile.suspended_at|date:"M j, Y, g:i a" }}</td>
+                            <td class="reason-cell" title="{{ profile.suspension_reason }}">
+                                {{ profile.suspension_reason|truncatewords:15 }}
+                            </td>
+                            <td>
+                                <a href="{% url 'reinstate_user' %}?id={{ profile.user.id }}" class="btn-reinstate">
+                                    Reinstate
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-users">
+                    ✅ No users are currently suspended.
+                </div>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>

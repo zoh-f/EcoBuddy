@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Out - EcoBuddy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #fff7e6;
+            margin: 0;
+            padding: 0;
+            color: #222;
+        }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .logout-box {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #2c5f2d;
+            margin: 0 0 15px 0;
+            font-size: 28px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #bdbdbd;
+        }
+
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .messages li {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .messages .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="logout-box">
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <div class="icon">👋</div>
+            <h1>Sign Out</h1>
+            <p>Are you sure you want to sign out of your EcoBuddy account?</p>
+
+            <form method="POST" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Sign Out</button>
+                    <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -198,7 +198,7 @@
 
         {% if posts %}
             {% for p in posts %}
-                <div class="post">
+                <div class="post" id="post-{{ p.id }}">
                     <div class="post-meta">
                         <span class="topic-badge">
                             {% for choice in p.TOPIC_CHOICES %}
@@ -226,6 +226,11 @@
                         {% endfor %}
                     </div>
                     {% endif %}
+
+                    <div style="margin-top:8px; font-size:14px; color:#888;">
+                        {{ p.likes.count }} likes
+                    </div>
+                    
                     <div class="post-date">Posted {{ p.created_at|date:"M j, Y, g:i a" }}</div>
                 </div>
             {% endfor %}

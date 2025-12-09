@@ -359,7 +359,7 @@
 
         {% if posts %}
             {% for post in posts %}
-            <div class="post">
+            <div class="post" id="post-{{ post.id }}">
                 <div class="post-header">
                     <div>
                         <a href="{% url 'user_profile' post.user.username %}" class="post-author">{{ post.author_display_name }}</a>
@@ -385,6 +385,20 @@
                     {% endfor %}
                 </div>
                 {% endif %}
+                
+                <div class="like-section" data-post-id="{{post.id}}">
+                    <button class="like-btn" data-post="{{post.id}}" style="background:none; border:none; font-size:22px; cursor:pointer;">
+                        {% if user in post.likes.all %}
+                            ❤️
+                        {% else %}
+                            🤍
+                        {% endif %}
+                    </button>
+
+                    <span class="like-count" id="like-count-{{ post.id }}">
+                        {{post.likes.count}}
+                    </span>
+                </div>
 
                 <div class="report-link">
                     <a href="{% url 'flag_content' %}?type=post&id={{ post.id }}">🚩 Report Post</a>
@@ -397,5 +411,48 @@
             </div>
         {% endif %}
     </div>
+
+    <!--used https://stackoverflow.com/questions/1601933/how-do-i-stop-a-web-page-from-scrolling-to-the-top-when-a-link-is-clicked-that-t-->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".like-btn").forEach(button => {
+            button.addEventListener("click", function (e) {
+                e.preventDefault();
+                const postId = this.dataset.post;
+                fetch(`/post/${postId}/like/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    this.textContent = data.liked ? "❤️" : "🤍";
+                    const countElement = document.getElementById(`like-count-${postId}`);
+                    if (countElement) {
+                        countElement.textContent = data.like_count;
+                    }
+                });
+            });
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = cookie.substring(name.length + 1);
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+    </script>
+
 </body>
 </html>

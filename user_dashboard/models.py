@@ -116,6 +116,12 @@ class Post(models.Model):
         default=0,
         help_text="Reserved for future Comment feature"
     )
+    likes = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='liked_posts',
+        blank=True,
+        help_text="Users who liked this post"
+    )
 
     # Moderation fields
     is_removed = models.BooleanField(default=False, help_text="Whether this post has been removed by a moderator")

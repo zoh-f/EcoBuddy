@@ -396,3 +396,63 @@ class FriendRequest(models.Model):
 
     def __str__(self):
         return f"{self.from_user.username} → {self.to_user.username} ({self.status})"
+
+
+class Notification(models.Model):
+    """In-app notifications for user activities"""
+
+    # Notification type choices
+    FRIEND_REQUEST = 'friend_request'
+    FRIEND_ACCEPT = 'friend_accept'
+    POST_LIKE = 'post_like'
+    NEW_MESSAGE = 'new_message'
+    POST_REMOVED = 'post_removed'
+    MESSAGE_REMOVED = 'message_removed'
+    ACCOUNT_SUSPENDED = 'account_suspended'
+    ACCOUNT_REINSTATED = 'account_reinstated'
+
+    NOTIFICATION_TYPE_CHOICES = [
+        (FRIEND_REQUEST, 'Friend Request'),
+        (FRIEND_ACCEPT, 'Friend Request Accepted'),
+        (POST_LIKE, 'Post Liked'),
+        (NEW_MESSAGE, 'New Message'),
+        (POST_REMOVED, 'Post Removed'),
+        (MESSAGE_REMOVED, 'Message Removed'),
+        (ACCOUNT_SUSPENDED, 'Account Suspended'),
+        (ACCOUNT_REINSTATED, 'Account Reinstated'),
+    ]
+
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        help_text="User who receives this notification"
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notifications_sent',
+        help_text="User who triggered this notification"
+    )
+    notification_type = models.CharField(
+        max_length=20,
+        choices=NOTIFICATION_TYPE_CHOICES
+    )
+    message = models.CharField(
+        max_length=255,
+        help_text="Human-readable notification message"
+    )
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'is_read', '-created_at']),
+            models.Index(fields=['recipient', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"Notification for {self.recipient.username}: {self.message[:50]}"

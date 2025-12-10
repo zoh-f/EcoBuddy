@@ -51,6 +51,10 @@ urlpatterns = [
     # Drafts routes
     path("drafts/", views.drafts_page, name="drafts_page"),
     path("drafts/publish/", views.publish_draft, name="publish_draft"),
+
+    # Notifications routes
+    path("notifications/", views.notifications_page, name="notifications"),
+    path("notifications/read-all/", views.mark_all_notifications_read, name="mark_all_notifications_read"),
 ]
 
 if settings.DEBUG:

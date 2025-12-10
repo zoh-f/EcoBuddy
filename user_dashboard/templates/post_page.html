@@ -175,6 +175,20 @@
         .btn-primary:hover {
             background: #45a049;
         }
+        .edit-btn {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #2c5f2d;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .edit-btn:hover {
+            background: #244d25;
+        }
     </style>
 </head>
 <body>
@@ -232,7 +246,10 @@
                     </div>
                     
                     <div class="post-date">Posted {{ p.created_at|date:"M j, Y, g:i a" }}</div>
+                    <a href="{% url 'edit_post' p.id %}" class="edit-btn">✏️ Edit</a>
+                    <a href="{% url 'delete_post' p.id %}" class="nav-btn" style="background:#f44336;">🗑 Delete</a>
                 </div>
+                
             {% endfor %}
         {% else %}
             <div class="empty-state">

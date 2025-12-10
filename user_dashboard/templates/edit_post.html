@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Post - EcoBuddy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #fff7e6;
+            margin: 0;
+            padding: 0;
+            color: #222;
+        }
+
+        .header {
+            background: #2c5f2d;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        .nav-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #45a049;
+        }
+
+        .nav-btn.secondary {
+            background: #fff;
+            color: #2c5f2d;
+            border: 2px solid #2c5f2d;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            color: #2c5f2d;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c5f2d;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .privacy-options {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+        }
+
+        .privacy-options label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+
+        .privacy-options input[type="radio"] {
+            margin-right: 8px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+            width: auto;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button, .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        button[type="submit"] {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .btn-secondary {
+            background-color: #757575;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #616161;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="{% url 'home' %}" class="logo">🌍 EcoBuddy</a>
+            <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'home' %}" class="nav-btn secondary">🏠 Home</a>
+        <a href="{% url 'public_feed' %}" class="nav-btn">📰 Feed</a>
+        <a href="{% url 'post_page' %}" class="nav-btn secondary">📝 My Posts</a>
+        <a href="{% url 'drafts_page' %}" class="nav-btn secondary">📋 Drafts</a>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">✏️ Edit Post</h1>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+             <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Title:</label>
+                {{ form.title }}
+                <div class="help-text">Give your post a catchy title</div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.content.id_for_label }}">Content:</label>
+                {{ form.content }}
+                <div class="help-text">Share your sustainability journey, tips, or achievements</div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.topic.id_for_label }}">Topic:</label>
+                {{ form.topic }}
+                <div class="help-text">Choose the most relevant sustainability category</div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.photo.id_for_label }}">Photo (optional):</label>
+                {{ form.photo }}
+                <div class="help-text">Add a photo to make your post more engaging</div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.hashtags.id_for_label }}">Hashtags:</label>
+                {{ form.hashtags }}
+                <div class="help-text">Enter hashtags separated by commas for further reach</div>
+            </div>
+
+            <div class="form-group">
+                <label>Privacy:</label>
+                <div class="privacy-options">
+                    {{ form.privacy }}
+                </div>
+                <div class="help-text">Public posts are visible to everyone. Private posts are only visible to your friends.</div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    {{ form.is_draft }}
+                    <label for="{{ form.is_draft.id_for_label }}">Save as draft (don't publish yet)</label>
+                </div>
+                <div class="help-text">Drafts are saved privately and can be published later</div>
+            </div>
+            <div class="button-group">
+                <button type="submit">Save Changes</button>
+                <a href="{% url 'post_page' %}" class="nav-btn secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -13,6 +13,8 @@ urlpatterns = [
     path("post_page/", views.posts_page, name="post_page"),
     path("create_post/", views.create_post, name="create_post"),
     path("post/<int:post_id>/like/", views.toggle_like, name="toggle_like"),
+    path("post/<int:post_id>/edit/", views.edit_post, name="edit_post"),
+    path("post/<int:post_id>/delete/", views.delete_post, name="delete_post"),
     path('finish-onboarding/', views.finish_onboarding, name='finish_onboarding'),
 
     # Account deletion routes

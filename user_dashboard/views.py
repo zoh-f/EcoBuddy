@@ -115,6 +115,48 @@ def create_post(request):
     return render(request, 'create_post.html', {'form': form})
 
 @login_required
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id, user=request.user)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            updated_post = form.save(commit=False)
+            updated_post.user = request.user
+            updated_post.save()
+
+            # Redirect back depending on draft/published
+            if updated_post.is_draft:
+                messages.success(request, "Draft updated!")
+                return redirect('drafts_page')
+            else:
+                messages.success(request, "Post updated!")
+                return redirect('post_page')
+
+    else:
+        form = PostForm(instance=post)
+
+    return render(request, 'edit_post.html', {
+        'form': form,
+        'post': post,
+    })
+
+@login_required
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id, user=request.user)
+
+    if request.method == "POST":
+        # Delete image file from storage
+        if post.photo:
+            post.photo.delete(save=False)
+
+        post.delete()
+        messages.success(request, "Post deleted successfully.")
+        return redirect("post_page")
+
+    return render(request, "confirm_delete_post.html", {"post": post})
+
+@login_required
 def account_settings(request):
     """
     Display the account settings page where users can:

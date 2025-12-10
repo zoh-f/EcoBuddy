@@ -7,6 +7,7 @@ from django.db.models import Count
 from user_info.models import UserInfo
 from .models import Message, ChatRoom
 from django.utils.dateformat import format as dj_format
+from user_dashboard.notifications import notify_new_message
 
 @login_required
 def lobby(request):
@@ -131,6 +132,7 @@ def create_message(request):
             chat_room=chat_room,
             content=content
         )
+        notify_new_message(request.user, chat_room)
         return JsonResponse({"success": True})
 
     return JsonResponse({"success": False, "errors": {"method": "Invalid request"}})

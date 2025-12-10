@@ -12,6 +12,11 @@ from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
 from .decorators import moderator_required
+from .notifications import (
+    notify_friend_request, notify_friend_accepted, notify_post_liked,
+    notify_post_removed, notify_message_removed, notify_account_suspended,
+    notify_account_reinstated
+)
 import boto3
 
 # Create your views here.
@@ -415,6 +420,7 @@ def remove_post(request):
         post.removed_at = timezone.now()
         post.removal_reason = reason
         post.save()
+        notify_post_removed(post, request.user, reason)
 
         if flag_id:
             flag = Flag.objects.get(id=flag_id)
@@ -449,6 +455,7 @@ def remove_message(request):
         message.removed_at = timezone.now()
         message.removal_reason = reason
         message.save()
+        notify_message_removed(message, request.user, reason)
 
         if flag_id:
             flag = Flag.objects.get(id=flag_id)
@@ -509,6 +516,7 @@ def suspend_user(request):
         profile.suspended_at = timezone.now()
         profile.suspended_by = request.user
         profile.save()
+        notify_account_suspended(user_to_suspend, request.user, reason)
 
         if flag_id:
             flag = Flag.objects.get(id=flag_id)
@@ -540,6 +548,7 @@ def reinstate_user(request):
         profile.reinstated_at = timezone.now()
         profile.reinstated_by = request.user
         profile.save()
+        notify_account_reinstated(user_to_reinstate, request.user)
 
         messages.success(request, f"User {user_to_reinstate.username} has been reinstated.")
         return redirect('suspended_users_list')
@@ -700,6 +709,7 @@ def send_friend_request(request):
         return redirect('friends_list')
 
     FriendRequest.objects.create(from_user=request.user, to_user=to_user)
+    notify_friend_request(request.user, to_user)
     messages.success(request, f"Friend request sent to {to_user.username}!")
     return redirect('user_profile', username=username)
 
@@ -719,6 +729,7 @@ def accept_friend_request(request):
     friend_request.save()
 
     Friendship.create_friendship(request.user, friend_request.from_user)
+    notify_friend_accepted(request.user, friend_request.from_user)
 
     messages.success(request, f"Now friends with {friend_request.from_user.username}!")
     return redirect('friends_list')
@@ -930,6 +941,7 @@ def toggle_like(request, post_id):
     else:
         post.likes.add(request.user)
         liked = True
+        notify_post_liked(request.user, post)
     if request.headers.get("X-Requested-With")=="XMLHttpRequest":
         return JsonResponse({
             "liked": liked,

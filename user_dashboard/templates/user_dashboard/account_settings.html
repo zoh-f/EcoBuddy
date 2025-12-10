@@ -172,6 +172,8 @@
         }
 
         input[type="text"],
+        input[type="email"],
+        select,
         textarea {
             width: 100%;
             padding: 10px;
@@ -183,7 +185,56 @@
             margin-top: 5px;
         }
 
+        .read-only-field {
+            background-color: #f5f5f5;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .field-help {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .topic-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .topic-checkbox:hover {
+            border-color: #4caf50;
+            background: #f0f8f0;
+        }
+
+        .topic-checkbox input[type="checkbox"] {
+            margin-right: 8px;
+            width: auto;
+        }
+
+        .topic-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 400;
+        }
+
         input[type="text"]:focus,
+        input[type="email"]:focus,
+        select:focus,
         textarea:focus {
             outline: none;
             border-color: #4caf50;
@@ -257,6 +308,30 @@
         .delete-btn:hover {
             background-color: #c82333;
         }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            margin-left: 10px;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -312,28 +387,73 @@
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <label for="id_profile_picture">Update Profile Picture:</label>
-                {{ form.profile_picture }}
-                <button type="submit" class="btn">Upload New Picture</button>
+                <input type="file" id="id_profile_picture" name="profile_picture" accept="image/*" />
+                <div class="image-actions">
+                    <button type="submit" class="btn">Upload New Picture</button>
+                    {% if profile.profile_picture %}
+                    <button type="submit" name="delete_picture" value="true" class="btn-danger" 
+                            onclick="return confirm('Are you sure you want to delete your profile picture?');">Clear Picture</button>
+                    {% endif %}
+                </div>
             </form>
             {% endif %}
         </div>
 
         <div class="settings-section">
-            <h2>Profile Information</h2>
+            <h2>Account Information</h2>
 
             <form method="POST">
                 {% csrf_token %}
+
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username"
+                       value="{{ user.username }}"
+                       class="read-only-field" readonly />
+                <div class="field-help">Your username cannot be changed</div>
+
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email"
+                       value="{{ user.email }}"
+                       placeholder="your.email@example.com" />
+                <div class="field-help">Your primary email address</div>
 
                 <label for="display_name">Display Name:</label>
                 <input type="text" id="display_name" name="display_name"
                        value="{{ userinfo.display_name|default:user.username }}"
                        placeholder="How you want to be called" />
+                <div class="field-help">This is how your name appears to others</div>
 
                 <label for="bio">Bio:</label>
                 <textarea id="bio" name="bio" rows="4"
                           placeholder="Tell others about yourself and your sustainability interests...">{{ userinfo.bio|default:"" }}</textarea>
+                <div class="field-help">Share a bit about yourself and your environmental interests</div>
 
-                <button type="submit" class="btn">Save Profile Changes</button>
+                <button type="submit" class="btn">Save Account Changes</button>
+            </form>
+        </div>
+
+        <div class="settings-section">
+            <h2>Sustainability Interests</h2>
+            <p style="margin-bottom: 15px; color: #666;">Select the topics you're most interested in. This helps personalize your experience on EcoBuddy.</p>
+
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="topics" />
+
+                <div class="topics-grid">
+                    {% for topic_key, topic_label in topics %}
+                    <div class="topic-checkbox">
+                        <input type="checkbox" 
+                               id="topic_{{ topic_key }}" 
+                               name="preferred_topics" 
+                               value="{{ topic_label }}"
+                               {% if topic_label in preferred_topics_list %}checked{% endif %} />
+                        <label for="topic_{{ topic_key }}">{{ topic_label }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn">Save Topic Preferences</button>
             </form>
         </div>
 

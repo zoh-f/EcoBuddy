@@ -276,7 +276,7 @@
 
                 <div class="draft-actions">
                     <a href="{% url 'publish_draft' %}?id={{ draft.id }}" class="btn btn-success">Publish</a>
-                    <a href="{% url 'create_post' %}" class="btn btn-secondary">Edit (Not Implemented)</a>
+                    <a href="{% url 'edit_post' draft.id %}" class="btn btn-secondary">Edit</a>
                 </div>
             </div>
             {% endfor %}

@@ -281,6 +281,7 @@
                 <div class="help-text">Public posts are visible to everyone. Private posts are only visible to your friends.</div>
             </div>
 
+            {% if post.is_draft %}
             <div class="form-group">
                 <div class="checkbox-group">
                     {{ form.is_draft }}
@@ -288,6 +289,8 @@
                 </div>
                 <div class="help-text">Drafts are saved privately and can be published later</div>
             </div>
+            {% endif %}
+            
             <div class="button-group">
                 <button type="submit">Save Changes</button>
                 <a href="{% url 'post_page' %}" class="nav-btn secondary">Cancel</a>

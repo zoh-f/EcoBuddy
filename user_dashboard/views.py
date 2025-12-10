@@ -218,19 +218,52 @@ def account_settings(request):
 
     profile, _ = Profile.objects.get_or_create(user=request.user)
 
-    # Handle POST requests (profile picture, bio, display_name)
+    # Handle POST requests (profile picture, bio, display_name, email, pronoun, topics)
     if request.method == "POST":
+        form_type = request.POST.get("form_type", "")
+        
+        # Handle topic preferences update
+        if form_type == "topics":
+            selected_topics = request.POST.getlist("preferred_topics")
+            profile.preferred_topics = ",".join(selected_topics)
+            profile.save()
+            messages.success(request, "Topic preferences updated successfully!")
+            return redirect("account_settings")
+        
+        # Handle profile picture deletion
+        if request.POST.get("delete_picture") == "true":
+            if profile.profile_picture:
+                profile.profile_picture.delete(save=True)
+                messages.success(request, "Profile picture deleted successfully!")
+            return redirect("account_settings")
+        
         # Profile image upload
         form = ProfileImageForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
+            messages.success(request, "Profile picture updated successfully!")
 
-        # Display name & bio update
+        # Update all editable fields
         display_name = request.POST.get("display_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        pronoun = request.POST.get("pronoun", "").strip()
         bio = request.POST.get("bio", "").strip()
 
+        # Update User model email
+        if email and email != request.user.email:
+            request.user.email = email
+            try:
+                request.user.full_clean()
+                request.user.save()
+            except ValidationError as e:
+                messages.error(request, "Invalid email address.")
+                return redirect("account_settings")
+
+        # Update UserInfo fields
         if display_name:
             userinfo.display_name = display_name
+        userinfo.email = email  # sync with User model
+        userinfo.pronoun = pronoun
         userinfo.bio = bio  # allow empty
 
         try:
@@ -244,10 +277,17 @@ def account_settings(request):
     else:
         form = ProfileImageForm(instance=profile)
 
+    # Get topic choices and user's preferred topics
+    from user_dashboard.models import Post
+    topics = Post.TOPIC_CHOICES
+    preferred_topics_list = profile.preferred_topics.split(",") if profile.preferred_topics else []
+
     return render(request, 'user_dashboard/account_settings.html', {
         'form': form,
         'profile': profile,
         'userinfo': userinfo,
+        'topics': topics,
+        'preferred_topics_list': preferred_topics_list,
     })
 
 @login_required

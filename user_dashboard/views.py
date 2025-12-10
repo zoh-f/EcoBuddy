@@ -936,3 +936,35 @@ def toggle_like(request, post_id):
             "like_count": post.likes.count()
         })
     return redirect(request.META.get("HTTP_REFERER", "public_feed"))
+
+
+# ========== NOTIFICATIONS =========
+from .models import Notification
+
+@login_required
+def notifications_page(request):
+    """Display all notifications for the current user"""
+    notifications = Notification.objects.filter(
+        recipient=request.user
+    ).select_related('sender').order_by('-created_at')[:50]
+
+    unread_count = Notification.objects.filter(
+        recipient=request.user, is_read=False
+    ).count()
+
+    return render(request, 'user_dashboard/notifications.html', {
+        'notifications': notifications,
+        'unread_count': unread_count,
+    })
+
+
+@login_required
+def mark_all_notifications_read(request):
+    """Mark all notifications as read for current user"""
+    if request.method == 'POST':
+        Notification.objects.filter(
+            recipient=request.user,
+            is_read=False
+        ).update(is_read=True)
+        messages.success(request, "All notifications marked as read.")
+    return redirect('notifications')

@@ -25,7 +25,6 @@ def home(request):
         })
 
     # --- Authenticated users see dashboard/profile (Read-only) ---
-    # Ensure a UserInfo exists for this user
     userinfo, _ = UserInfo.objects.get_or_create(
         username=request.user.username,
         defaults={"email": request.user.email}
@@ -34,11 +33,35 @@ def home(request):
         userinfo.email = request.user.email
         userinfo.save()
 
-    # Ensure a Profile exists
     profile, _ = Profile.objects.get_or_create(user=request.user)
     show_modal = not profile.first_time_complete
     topics = Post.TOPIC_CHOICES
     preferred_topics_list = profile.preferred_topics.split(",") if profile.preferred_topics else []
+
+    # 1) Get this user's non-draft, non-removed posts
+    user_posts = Post.objects.filter(
+        user=request.user,
+        is_draft=False,
+        is_removed=False,
+    )
+
+    # 2) Which topic VALUES do we actually see?
+    topics_used = set(user_posts.values_list("topic", flat=True).distinct())
+
+    # --- DEBUG: log to console ---
+    #print("ACHIEVEMENTS DEBUG:",
+     #     "posts =", user_posts.count(),
+      #    "topics_used =", topics_used)
+
+    achievements = {
+        "eco_starter": "living" in topics_used,     # 🌱 Sustainable Living
+        "recycler": "recycling" in topics_used,     # ♻️ Recycling & Waste
+        "campus_steward": "campus" in topics_used,  # 🍃 Campus Sustainability
+        "green_foodie": "food" in topics_used,      # 🥗 Food & Dining
+        "eco_commuter": "transport" in topics_used  # 🚴 Transportation
+    }
+
+    has_any_achievement = any(achievements.values())
 
     return render(request, "index.html", {
         "userinfo": userinfo,
@@ -46,7 +69,20 @@ def home(request):
         "topics": topics,
         "show_onboarding": show_modal,
         "preferred_topics_list": preferred_topics_list,
+        "achievements": achievements,
+        "has_any_achievement": has_any_achievement,
     })
+
+
+    return render(request, "index.html", {
+        "userinfo": userinfo,
+        "profile": profile,
+        "topics": topics,
+        "show_onboarding": show_modal,
+        "preferred_topics_list": preferred_topics_list,
+        "achievements": achievements,   # ← pass to template
+    })
+
 
 def logout_view(request):
     logout(request)

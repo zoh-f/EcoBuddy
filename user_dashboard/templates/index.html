@@ -387,21 +387,55 @@
     <!-- Badges/Achievements Section -->
     <div class="section-card">
       <h3 class="section-title">🏆 Achievements</h3>
-      <div class="badge-container">
-        <div class="badge-item">
-          <span class="badge-icon">🌱</span>
-          <p class="badge-label">Eco Starter</p>
+
+      {% if has_any_achievement %}
+        <div class="badge-container">
+
+          {% if achievements.eco_starter %}
+          <div class="badge-item">
+            <span class="badge-icon">🌱</span>
+            <p class="badge-label">Eco Starter</p>
+          </div>
+          {% endif %}
+
+          {% if achievements.recycler %}
+          <div class="badge-item">
+            <span class="badge-icon">♻️</span>
+            <p class="badge-label">Recycler</p>
+          </div>
+          {% endif %}
+
+          {% if achievements.campus_steward %}
+          <div class="badge-item">
+            <span class="badge-icon">🍃</span>
+            <p class="badge-label">Campus Steward</p>
+          </div>
+          {% endif %}
+
+          {% if achievements.green_foodie %}
+          <div class="badge-item">
+            <span class="badge-icon">🥗</span>
+            <p class="badge-label">Green Foodie</p>
+          </div>
+          {% endif %}
+
+          {% if achievements.eco_commuter %}
+          <div class="badge-item">
+            <span class="badge-icon">🚴</span>
+            <p class="badge-label">Eco Commuter</p>
+          </div>
+          {% endif %}
+
         </div>
-        <div class="badge-item">
-          <span class="badge-icon">♻️</span>
-          <p class="badge-label">Recycler</p>
-        </div>
-        <div class="badge-item">
-          <span class="badge-icon">🌍</span>
-          <p class="badge-label">Planet Hero</p>
-        </div>
-      </div>
+      {% else %}
+        <p style="color:#666; font-size:14px;">
+          You don't have any achievements yet. Create posts in different sustainability topics
+          to unlock badges!
+        </p>
+      {% endif %}
     </div>
+
+
 
     <!-- Profile info (Read-only) -->
     <div class="section-card">

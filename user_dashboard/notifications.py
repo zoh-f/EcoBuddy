@@ -52,6 +52,17 @@ def notify_friend_accepted(from_user, to_user):
     )
 
 
+def notify_friend_removed(from_user, removed_user):
+    """Notify user that they have been removed as a friend"""
+    display_name = get_display_name(from_user)
+    return create_notification(
+        recipient=removed_user,
+        sender=from_user,
+        notification_type=Notification.FRIEND_REMOVED,
+        message=f"{display_name} removed you from their friends list"
+    )
+
+
 def notify_post_liked(liker, post):
     """Notify post owner that their post was liked"""
     if liker == post.user:

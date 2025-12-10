@@ -404,6 +404,7 @@ class Notification(models.Model):
     # Notification type choices
     FRIEND_REQUEST = 'friend_request'
     FRIEND_ACCEPT = 'friend_accept'
+    FRIEND_REMOVED = 'friend_removed'
     POST_LIKE = 'post_like'
     NEW_MESSAGE = 'new_message'
     POST_REMOVED = 'post_removed'
@@ -414,6 +415,7 @@ class Notification(models.Model):
     NOTIFICATION_TYPE_CHOICES = [
         (FRIEND_REQUEST, 'Friend Request'),
         (FRIEND_ACCEPT, 'Friend Request Accepted'),
+        (FRIEND_REMOVED, 'Friend Removed'),
         (POST_LIKE, 'Post Liked'),
         (NEW_MESSAGE, 'New Message'),
         (POST_REMOVED, 'Post Removed'),

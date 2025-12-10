@@ -15,7 +15,7 @@ from .decorators import moderator_required
 from .notifications import (
     notify_friend_request, notify_friend_accepted, notify_post_liked,
     notify_post_removed, notify_message_removed, notify_account_suspended,
-    notify_account_reinstated
+    notify_account_reinstated, notify_friend_removed
 )
 import boto3
 
@@ -761,6 +761,7 @@ def unfriend(request):
 
     if request.method == 'POST':
         Friendship.remove_friendship(request.user, friend)
+        notify_friend_removed(request.user, friend)
         messages.success(request, f"No longer friends with {friend.username}.")
         return redirect('friends_list')
 

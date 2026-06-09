@@ -2,8 +2,6 @@
 
 A sustainability-focused social platform where users share eco-friendly tips, connect with like-minded peers, and build greener communities.
 
-**Live demo:** [sustainability-app-b15-88368bb3ea4a.herokuapp.com](https://sustainability-app-b15-88368bb3ea4a.herokuapp.com/)
-
 ## Features
 
 - **Social feed** — Browse and create posts tagged by sustainability topics (recycling, transport, campus life, food, and more)
@@ -36,7 +34,7 @@ A sustainability-focused social platform where users share eco-friendly tips, co
 ### 1. Clone and install
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/zoh-f/EcoBuddy
 cd EcoBuddy
 
 python -m venv venv

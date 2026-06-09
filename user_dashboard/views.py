@@ -79,16 +79,6 @@ def home(request):
     })
 
 
-    return render(request, "index.html", {
-        "userinfo": userinfo,
-        "profile": profile,
-        "topics": topics,
-        "show_onboarding": show_modal,
-        "preferred_topics_list": preferred_topics_list,
-        "achievements": achievements,   # ← pass to template
-    })
-
-
 def logout_view(request):
     logout(request)
     return redirect('/')
@@ -309,18 +299,17 @@ def delete_account(request):
         deleted_files = []  # Track what we delete (for logging)
         failed_files = []   # Track failures (for debugging)
 
-        try:
-            s3_client = boto3.client(
-                's3',
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                region_name=settings.AWS_S3_REGION_NAME
-            )
-        except Exception as e:
-            print(f"Failed to connect to S3: {e}")
-            # Continue anyway - we'll still delete the account
-            s3_client = None
-
+        s3_client = None
+        if getattr(settings, 'USE_S3', False):
+            try:
+                s3_client = boto3.client(
+                    's3',
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                    region_name=settings.AWS_S3_REGION_NAME,
+                )
+            except Exception as e:
+                print(f"Failed to connect to S3: {e}")
 
         if s3_client and hasattr(user, 'profile'):
             profile = user.profile

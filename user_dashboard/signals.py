@@ -1,11 +1,18 @@
+import os
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from django.db.models.signals import post_save
 from .models import Profile
 
-ADMIN_EMAIL = ["swe.project.b15@gmail.com", "admin@gmail.com"]
+ADMIN_EMAIL = [
+    email.strip()
+    for email in os.environ.get(
+        'ADMIN_EMAILS',
+        'swe.project.b15@gmail.com,admin@gmail.com',
+    ).split(',')
+    if email.strip()
+]
 
 User = get_user_model()
 
